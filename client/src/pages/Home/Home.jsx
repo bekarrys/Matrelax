@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api';
 import ProductCard from '../../components/ProductCard/ProductCard';
+import SeriesDropdown from '../../components/SeriesDropdown/SeriesDropdown';
 import { useCartStore } from '../../store/cartStore';
 import './Home.css';
 
@@ -18,10 +19,12 @@ export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedSeries, setSelectedSeries] = useState('all');
   const totalItems = useCartStore((s) => s.items.reduce((sum, i) => sum + i.quantity, 0));
   const openCart = useCartStore((s) => s.openCart);
 
   useEffect(() => {
+    setSelectedSeries('all');
     setLoading(true);
     setError('');
     api.products
@@ -31,6 +34,13 @@ export default function Home() {
   }, [activeCategory]);
 
   const sectionLabel = CATEGORIES.find((c) => c.key === activeCategory)?.label ?? '';
+
+  const seriesList = [...new Set(products.map((p) => p.series).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'ru'));
+
+  const visibleProducts = selectedSeries === 'all'
+    ? products
+    : products.filter((p) => p.series === selectedSeries);
 
   return (
     <div className="home-page">
@@ -65,6 +75,16 @@ export default function Home() {
             </button>
           ))}
         </div>
+
+        {!loading && seriesList.length > 1 && (
+          <div className="home-series-filter">
+            <SeriesDropdown
+              series={seriesList}
+              value={selectedSeries}
+              onChange={setSelectedSeries}
+            />
+          </div>
+        )}
       </div>
 
       {/* Hero */}
@@ -91,7 +111,7 @@ export default function Home() {
               ? Array.from({ length: 5 }).map((_, i) => (
                   <div key={i} className="product-card-skeleton skeleton" />
                 ))
-              : products.map((product, i) => (
+              : visibleProducts.map((product, i) => (
                   <ProductCard key={product.id} product={product} animIndex={i} />
                 ))}
           </div>
