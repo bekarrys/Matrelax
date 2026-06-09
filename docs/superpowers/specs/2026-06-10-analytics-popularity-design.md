@@ -68,9 +68,17 @@ join'ов с каталогом и без вложенных `metadata`.
 - `product_view`, `add_to_cart` → `modelId` обязателен (непустая строка ≤ 100),
   `series` опционален (строка ≤ 100).
 - `series_filter` → `series` обязателен (строка ≤ 100), `modelId` запрещён.
-- `series` (когда присутствует) сверяется с известным списком серий; неизвестные
-  отклоняются.
-- Лишние поля отбрасываются; длины строк ограничены (анти-мусор).
+- `series`/`modelId` валидируются только по **формату** (непустая строка, длина
+  ≤ 100, без управляющих символов). Membership-проверка по списку серий **не
+  делается**.
+- Лишние поля отбрасываются (анти-мусор).
+
+**Почему без whitelist серий.** Список серий динамический (хранится на товарах в
+Firestore, см. [server/scripts/migrateProductsSeries.js](../../../server/scripts/migrateProductsSeries.js)),
+поэтому проверка членства требовала бы кэшировать каталог с риском устаревания и
+циклической зависимости при старте сервера. При этом от накрутки она не защищает —
+серии публичны, бот возьмёт реальное имя. Отсечение мусорных строк уже обеспечивают
+ограничение длины и формат, а мелкий мусор не всплывает в «топ-N». YAGNI.
 
 ## Безопасность
 
@@ -78,14 +86,20 @@ join'ов с каталогом и без вложенных `metadata`.
 Запись и чтение идут только через сервер на Admin SDK, который обходит Firestore
 rules.
 
-- В [firestore.rules](../../../firestore.rules) — явный **deny** на коллекцию
-  `analyticsEvents` (нет клиентского read/write/update/delete). Из браузера в
-  коллекцию ничего не записать и не прочитать даже с web-конфигом Firebase.
+**Важно про модель Firestore rules:** правил «deny» не существует — доступ запрещён
+по умолчанию, правила только *разрешают* (allow'ы объединяются по ИЛИ). В
+[firestore.rules](../../../firestore.rules) `analyticsEvents` **уже закрыт**
+существующим catch-all `match /{document=**} { allow read, write: if false }`, а
+wildcard-`allow ... if true` в файле отсутствует (единственный `if true` — `read`
+на `/products`, на другие коллекции не распространяется). Для самодокументируемости
+(по стилю проекта с явными блоками на коллекцию) добавим явный блок
+`match /analyticsEvents/{id} { allow read, write: if false; }` — функционально
+избыточный, но фиксирует намерение и страхует от будущего расширения правил.
 
 | Угроза | Защита |
 |---|---|
-| Сбросить/удалить чужие данные | Невозможно: клиенту недоступны write/delete (rules deny). Единственный публичный путь — POST, который только *создаёт* событие. |
-| Накрутить статистику | Снижаем: (1) строгая схема-валидация; (2) per-IP rate-limit (best-effort); (3) сверка `series` с известным списком. |
+| Сбросить/удалить чужие данные | Невозможно: у клиента нет allow на коллекцию (default-deny). Единственный публичный путь — POST, который только *создаёт* событие. |
+| Накрутить статистику | Снижаем: (1) строгая формат-валидация; (2) per-IP rate-limit (best-effort). |
 
 **Known limitation:** публичный анонимный эндпоинт нельзя на 100% защитить от
 спуфинга. Это осознанный компромисс для трафика витрины; аналитика трактуется как
@@ -101,8 +115,10 @@ rate-limit и **в документ не пишется**.
 
 - Монтируется в [server/app.js](../../../server/app.js) без `verifyToken` (как
   `POST /api/orders`).
-- Перед роутом — лёгкий **in-memory rate-limit middleware** (дефолт: 60 запросов
-  за 60 с на IP, настраивается через env). При превышении → `429`.
+- Rate-limit через **express-rate-limit**, смонтирован на путь `/api/analytics`
+  **до** глобального `express.json()` в [server/app.js](../../../server/app.js) —
+  мусорные запросы ботов отсекаются ещё до парсинга тела. Дефолт: 60 запросов /
+  60 с на IP (настраивается через env), при превышении → `429`.
 - Тело → ручной валидатор. Ошибка валидации → `400 { error }` (никогда 500 на
   плохой ввод).
 - Сервер обогащает `id`, `createdAt`, `day`, `source`; пишет в `analyticsEvents`
@@ -152,8 +168,10 @@ export function trackEvent(event) {
   при выборе серии в SeriesDropdown (небольшой debounce).
 - `product_view` — [client/src/pages/ProductDetail/ProductDetail.jsx](../../../client/src/pages/ProductDetail/ProductDetail.jsx)
   на mount.
-- `add_to_cart` — там, где реально добавляют в корзину
-  (ProductCard/ProductDetail/cartStore).
+- `add_to_cart` — в компоненте с полным объектом товара (ProductCard/
+  ProductDetail); `series` берётся из `product.series` и кладётся в событие. **Не**
+  из `cartStore`: его items не содержат `series` (см.
+  [client/src/store/cartStore.js](../../../client/src/store/cartStore.js)).
 
 Метод `api.reports.popularity(period)` добавляется в
 [client/src/utils/api.js](../../../client/src/utils/api.js).
@@ -173,6 +191,9 @@ export function trackEvent(event) {
 
 ## Тестирование
 
+Тест-раннер — встроенный **`node:test`** (без новых зависимостей); валидатор и
+агрегация написаны как чистые функции и тестируются без подъёма сервера.
+
 - **Юнит — валидатор:** валидные/невалидные кейсы по каждому типу, отсутствующие
   поля, превышение длины, неизвестный тип, лишние поля, неизвестная серия.
 - **Юнит — агрегация:** набор событий → ожидаемые `topSeries`/`topProducts`/`byType`.
@@ -185,10 +206,14 @@ export function trackEvent(event) {
 ## Порядок реализации
 
 1. **Backend**
-   - Обновить `firestore.rules` (deny на `analyticsEvents`).
-   - Создать `server/utils/validator.js` (валидатор события).
-   - Создать `server/routes/analytics.js` (POST + rate-limit middleware), смонтировать в `app.js`.
-   - Добавить `GET /api/reports/popularity/:period?` + утилиту агрегации.
+   - `firestore.rules`: добавить документирующий блок
+     `match /analyticsEvents/{id} { allow read, write: if false; }` и подтвердить
+     отсутствие wildcard `allow ... if true` (доступ уже закрыт catch-all'ом).
+   - Создать `server/utils/validator.js` (валидатор события) + `node:test` к нему.
+   - Установить `express-rate-limit` в `server/`.
+   - Создать `server/routes/analytics.js` (POST), смонтировать в `app.js`:
+     лимитер на `/api/analytics` **до** `express.json()`.
+   - Добавить `GET /api/reports/popularity/:period?` + утилиту агрегации (+ тест).
 2. **Инфраструктура**
    - Подтвердить, что индексы Firestore не нужны (фильтр только по `day`).
 3. **Frontend**
