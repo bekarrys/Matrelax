@@ -1,0 +1,5 @@
+{
+  "name": "matrelax-staff",
+  "description": "Create and manage Matrelax staff users in Firebase Auth with roles (admin, manager, executor)",
+  "version": "1.0.0"
+}

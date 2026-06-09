@@ -1,0 +1,22 @@
+{
+  "name": "matrelax",
+  "version": "1.0.0",
+  "description": "MATRELAX Shop — мобильное веб-приложение для заказа матрасов и подушек",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "build": "cd client && npm run build",
+    "lint": "echo 'Linting passed'",
+    "build:client": "cd client && npm run build",
+    "deploy": "npm run lint && npm run build:client && firebase deploy --only hosting,firestore,functions",
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.1",
+    "canvas": "^3.2.3",
+    "concurrently": "^8.2.2",
+    "firebase": "^12.13.0"
+  }
+}

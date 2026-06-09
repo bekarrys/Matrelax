@@ -1,0 +1,181 @@
+.employees-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Page Header ─────────────────────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.page-header h1   { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+.page-subtitle    { font-size: 0.8rem; color: var(--text-muted); }
+.page-header .btn-primary {
+  width: auto; padding: 10px 20px; min-height: 40px;
+  border-radius: var(--border-radius-sm); font-size: 0.875rem;
+}
+
+/* ── Stats Row ───────────────────────────────────────────────────────────── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: border-color var(--transition-fast);
+}
+.stat-card:hover { border-color: var(--border-color-light); }
+.stat-card > svg { color: var(--text-muted); flex-shrink: 0; }
+.stat-card > div { display: flex; flex-direction: column; gap: 3px; }
+.stat-label  { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.stat-value  { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); }
+.stat-value.accent  { color: var(--status-ready); }
+.stat-value.warning { color: var(--status-progress); }
+
+/* ── Empty State ─────────────────────────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 80px 24px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.empty-state svg { opacity: 0.2; }
+.empty-state p   { font-size: 0.9rem; }
+.empty-state .btn-primary { width: auto; padding: 10px 20px; min-height: 40px; border-radius: var(--border-radius-sm); }
+
+/* ── Employees Grid ──────────────────────────────────────────────────────── */
+.employees-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.employee-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: border-color var(--transition-fast);
+}
+.employee-card:hover { border-color: var(--border-color-light); }
+
+.employee-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.employee-avatar {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: var(--primary-bg);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--primary-light);
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.employee-header h3 { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+.employee-header p  { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+/* ── Employee Stats ──────────────────────────────────────────────────────── */
+.employee-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 14px;
+  background: var(--bg-secondary);
+  border-radius: var(--border-radius-sm);
+}
+.emp-stat { display: flex; flex-direction: column; gap: 3px; align-items: center; text-align: center; }
+.emp-stat-label { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.emp-stat-value { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); }
+.emp-stat-value.accent  { color: var(--status-ready); }
+.emp-stat-value.warning { color: var(--status-progress); }
+
+/* ── Employee Actions ────────────────────────────────────────────────────── */
+.employee-actions {
+  display: flex;
+  gap: 8px;
+}
+.btn-sm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+  flex: 1;
+  justify-content: center;
+}
+.btn-sm:hover {
+  background: var(--primary-bg);
+  border-color: var(--accent);
+  color: var(--primary-light);
+}
+
+/* ── History ─────────────────────────────────────────────────────────────── */
+.employee-history { border-top: 1px solid var(--border-color); padding-top: 12px; }
+.employee-history h4 { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.history-mini {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+.history-mini:last-child { border-bottom: none; }
+
+/* ── Modal Form ──────────────────────────────────────────────────────────── */
+.modal-form { display: flex; flex-direction: column; gap: 14px; }
+.form-field { display: flex; flex-direction: column; gap: 6px; }
+.form-field label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.form-field input {
+  padding: 10px 14px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: border-color var(--transition-fast);
+}
+.form-field input:focus { border-color: var(--accent); }
+.btn-block { width: 100%; border-radius: var(--border-radius-sm); min-height: 44px; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .employees-grid { grid-template-columns: 1fr; }
+  .stats-row      { grid-template-columns: 1fr; }
+  .page-header    { flex-direction: column; }
+  .page-header .btn-primary { width: 100%; }
+}

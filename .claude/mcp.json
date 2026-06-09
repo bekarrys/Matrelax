@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@playwright/mcp"]
+    },
+    "firebase": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@gannonh/firebase-mcp"],
+      "env": {
+        "SERVICE_ACCOUNT_KEY_PATH": "C:\\Users\\asus\\OneDrive\\Desktop\\Matrelax\\firebase-service-account.json",
+        "FIREBASE_STORAGE_BUCKET": "matrelax.firebasestorage.app"
+      }
+    },
+    "magic": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@21st-dev/magic@latest", "API_KEY=5deaff746f9be88316d4dd7e03d44a57ad22c630ab3ed15d7439becaa3406204"]
+    },
+    "context7": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@upstash/context7-mcp"]
+    }
+  }
+}

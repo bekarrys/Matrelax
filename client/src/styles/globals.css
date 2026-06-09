@@ -1,0 +1,224 @@
+/* Шрифт подключён через <link> в index.html — без блокировки рендера */
+:root {
+  /* ── Core palette ── */
+  --bg: #0a0a0a;
+  --surface: #1a1a1a;
+  --surface-2: #252525;
+  --surface-3: #2e2e2e;
+  --text-primary: #ffffff;
+  --text-secondary: #888888;
+  --text-tertiary: #555555;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-red: #e94560;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-full: 999px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+
+  /* ── Admin panel design system ── */
+  --bg-primary:   #0a0a0a;
+  --bg-secondary: #111111;
+  --bg-card:      #161616;
+  --bg-card-hover:#1c1c1c;
+  --bg-overlay:   rgba(0, 0, 0, 0.75);
+  --border-color: rgba(255, 255, 255, 0.07);
+  --border-color-light: rgba(255, 255, 255, 0.12);
+  --text-muted:   #444444;
+  --primary-light: #60a5fa;
+  --primary-bg:   rgba(37, 99, 235, 0.12);
+
+  /* Status colours */
+  --status-progress:    #f59e0b;
+  --status-progress-bg: rgba(245, 158, 11, 0.12);
+  --status-ready:       #10b981;
+  --status-ready-bg:    rgba(16, 185, 129, 0.12);
+  --status-delivery:    #8b5cf6;
+  --status-delivery-bg: rgba(139, 92, 246, 0.12);
+  --status-delivered:   #6b7280;
+  --status-delivered-bg:rgba(107, 114, 128, 0.1);
+
+  /* Spacing scale */
+  --space-1:  4px;  --space-2:  8px;  --space-3: 12px;
+  --space-4: 16px;  --space-5: 20px;  --space-6: 24px;
+  --space-8: 32px;  --space-10:40px;  --space-12:48px;
+
+  /* Border radius aliases */
+  --border-radius:    12px;
+  --border-radius-sm:  8px;
+  --border-radius-lg: 20px;
+
+  /* Shadows */
+  --shadow-sm: 0 2px 12px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 24px rgba(0,0,0,0.5);
+
+  /* Z-index */
+  --z-sticky: 100;
+  --z-modal:  1000;
+
+  /* Transitions */
+  --transition-fast: 0.12s ease;
+  --transition-base: 0.2s  ease;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'Golos Text', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  min-height: 100dvh;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-family: inherit;
+  touch-action: manipulation;
+}
+
+input, textarea, select {
+  font-family: inherit;
+  outline: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* Scrollbar hide */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Skeleton loading animation */
+@keyframes skeleton-pulse {
+  0% { background-color: #1e1e1e; }
+  50% { background-color: #2a2a2a; }
+  100% { background-color: #1e1e1e; }
+}
+
+.skeleton {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* Page transition */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: fadeSlideUp 0.2s ease forwards;
+}
+
+/* Staggered cards */
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Button press */
+.btn-press {
+  transition: transform 0.1s ease;
+}
+.btn-press:active {
+  transform: scale(0.95);
+}
+
+/* Common button styles */
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--radius-full);
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  touch-action: manipulation;
+  transition: transform 0.1s, background 0.15s;
+}
+.btn-primary:active {
+  transform: scale(0.97);
+  background: var(--accent-hover);
+}
+
+.btn-secondary {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border-radius: var(--radius-full);
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  touch-action: manipulation;
+}
+
+.price-btn {
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--radius-full);
+  padding: 16px 20px;
+  font-size: clamp(13px, 4vw, 17px);
+  font-weight: 700;
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  transition: transform 0.1s, background 0.15s;
+  touch-action: manipulation;
+}
+.price-btn:active {
+  transform: scale(0.97) translateY(0);
+  background: var(--accent-hover);
+}

@@ -1,0 +1,5 @@
+/* Tailwind utilities — preflight отключён, существующие стили не затрагиваются */
+@tailwind components;
+@tailwind utilities;
+
+#root { min-height: 100dvh; background: var(--bg); }

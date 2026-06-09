@@ -1,0 +1,148 @@
+.product-editor {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+.product-editor .page-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.product-editor .page-header-info {
+  flex: 1;
+  min-width: 160px;
+}
+
+.product-editor .page-header-info h1 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.pe-id {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.pe-card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.pe-card h3 {
+  margin: 0 0 16px;
+  font-size: 1rem;
+}
+
+.pe-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.pe-card-head h3 { margin: 0; }
+
+.pe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.pe-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pe-field label {
+  font-size: 0.78rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.pe-field input,
+.pe-field textarea {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.pe-field input:focus,
+.pe-field textarea:focus {
+  outline: none;
+  border-color: #6366f1;
+}
+
+.pe-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.pe-checkbox input { width: auto; }
+
+.pe-size-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: end;
+  padding: 12px 0;
+  border-top: 1px solid #f2f2f2;
+}
+
+.btn-icon-danger {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 9px;
+  cursor: pointer;
+  display: inline-flex;
+  height: fit-content;
+}
+.btn-icon-danger:hover { background: #fee2e2; }
+
+.btn-sm {
+  font-size: 0.8rem;
+  padding: 7px 10px;
+}
+
+.pe-error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 0.85rem;
+}
+
+.pe-muted {
+  color: #999;
+  font-size: 0.85rem;
+}

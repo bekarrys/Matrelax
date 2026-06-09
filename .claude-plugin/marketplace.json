@@ -1,0 +1,24 @@
+{
+  "plugins": [
+    {
+      "name": "matrelax-deploy",
+      "path": "skills/matrelax-deploy",
+      "description": "Build and deploy Matrelax to Firebase Hosting + Functions + Firestore Rules"
+    },
+    {
+      "name": "matrelax-migrate",
+      "path": "skills/matrelax-migrate",
+      "description": "Seed Firestore from local JSON data files (products, orders, staff)"
+    },
+    {
+      "name": "matrelax-staff",
+      "path": "skills/matrelax-staff",
+      "description": "Create and manage staff users with roles in Firebase Auth"
+    },
+    {
+      "name": "matrelax-health",
+      "path": "skills/matrelax-health",
+      "description": "Check dev environment health: API, client, Firestore, env vars"
+    }
+  ]
+}

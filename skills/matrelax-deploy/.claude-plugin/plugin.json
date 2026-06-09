@@ -1,0 +1,5 @@
+{
+  "name": "matrelax-deploy",
+  "description": "Build Matrelax client and deploy to Firebase Hosting + Functions + Firestore Rules",
+  "version": "1.0.0"
+}

@@ -1,0 +1,5 @@
+{
+  "name": "matrelax-health",
+  "description": "Check Matrelax dev environment health: API server, client, Firestore connection, env vars",
+  "version": "1.0.0"
+}

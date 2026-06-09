@@ -1,0 +1,29 @@
+node_modules/
+dist/
+build/
+
+# Env-файлы любых видов (.env, .env.production, .env.local …)
+.env*
+!.env.example
+
+server/data/orders/
+server/data/finance/
+server/data/staff/
+# Локальные дампы данных (рантайм использует Firestore, не файлы) — могут содержать ПДн
+server/data/*.json
+!server/data/catalog/*.json
+server/logs/
+*.log
+
+# Приватные ключи Firebase — в любой папке, без исключений
+firebase-service-account.json
+**/firebase-service-account.json
+*serviceAccount*.json
+*.pem
+
+# Сид-скрипт с плейн-текст паролями — рефакторить на env-переменные перед коммитом
+server/scripts/create-users.js
+
+# Кэш Firebase-деплоя и артефакты Playwright-проверок
+.firebase/
+.playwright-mcp/

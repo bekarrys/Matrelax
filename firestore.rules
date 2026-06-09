@@ -1,0 +1,164 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ═══════════════════════════════════════════════════════════════
+    //  HELPERS
+    //  Роли читаются из custom claims Firebase Auth — они устанавливаются
+    //  через Admin SDK (server/scripts/create-users.js) и не могут быть
+    //  изменены с клиента.
+    // ═══════════════════════════════════════════════════════════════
+
+    function signedIn()  { return request.auth != null; }
+    function uid()       { return request.auth.uid; }
+    function userRole()  { return request.auth.token.role; }
+
+    function isAdmin()          { return signedIn() && userRole() == 'admin'; }
+    function isManager()        { return signedIn() && userRole() == 'manager'; }
+    function isExecutor()       { return signedIn() && userRole() == 'executor'; }
+    function isAdminOrManager() { return isAdmin() || isManager(); }
+
+    // Набор полей, реально изменившихся в текущем запросе
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  МАТРИЦА ПРАВ
+    //
+    //  Коллекция       | Admin          | Manager        | Executor       | Client
+    //  ──────────────────────────────────────────────────────────────────────────
+    //  users           | CRUD           | -              | own read       | own read
+    //  products        | write (цены)   | read           | read           | read (public)
+    //  shopOrders      | get + list     | CRUD           | update(статус) | create + get по id
+    //  adminOrders     | get+list+delete| CRU + list     | read(progress) | -
+    //                  |                |                | update(→ready) |
+    //  employees       | CRUD           | CRUD           | -              | -
+    //  catalog         | CRUD           | read           | -              | -
+    //  debts           | CRUD           | read           | -              | -
+    // ═══════════════════════════════════════════════════════════════
+
+
+    // ───────────────────────────────────────────────────────────────
+    //  USERS
+    //  Пользователи видят только свой профиль; Админ — все профили.
+    //  Никто (включая владельца) не может изменить собственную роль —
+    //  это возможно только через Admin SDK.
+    // ───────────────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow get:    if isAdmin() || uid() == userId;
+      allow list:   if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin()
+                    || (uid() == userId
+                        && !changedKeys().hasAny(['role', 'uid']));
+      allow delete: if isAdmin();
+    }
+
+
+    // ───────────────────────────────────────────────────────────────
+    //  PRODUCTS  ← КЛЮЧЕВОЕ ОГРАНИЧЕНИЕ
+    //  Чтение открыто всем — публичный каталог магазина работает без логина.
+    //  Любая запись (create / update / delete) — строго только Admin.
+    //  Менеджер, Исполнитель и Клиент физически не могут изменить цены.
+    // ───────────────────────────────────────────────────────────────
+    match /products/{productId} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+
+    // ───────────────────────────────────────────────────────────────
+    //  SHOP ORDERS  (публичные заказы с сайта)
+    //
+    //  Admin — только просмотр (get + list). Создавать, изменять
+    //  и удалять заказы Admin не может: это зона ответственности
+    //  Manager и Client.
+    //
+    //  create  — Manager или Client (Client оформляет с сайта без логина)
+    //  get     — Admin, Manager, или публично по orderId (статус-чек)
+    //  list    — Admin или Manager
+    //  update  — Manager или Executor (смена статуса в производстве)
+    //  delete  — только Manager
+    // ───────────────────────────────────────────────────────────────
+    match /shopOrders/{orderId} {
+      allow create: if isManager() || !signedIn();
+      allow get:    if isAdminOrManager() || !signedIn();
+      allow list:   if isAdminOrManager();
+      allow update: if isManager() || isExecutor();
+      allow delete: if isManager();
+    }
+
+
+    // ───────────────────────────────────────────────────────────────
+    //  ADMIN ORDERS  (внутренние заказы цеха)
+    //
+    //  Executor:
+    //  • Видит только заказы со статусом 'progress'
+    //    (клиент обязан передавать where('status','==','progress'))
+    //  • Может обновить ТОЛЬКО поля status → 'ready', updatedAt, history.
+    //    Любое изменение других полей будет отклонено.
+    //
+    //  Manager: создаёт и редактирует, но НЕ удаляет.
+    //  Admin: полный контроль.
+    // ───────────────────────────────────────────────────────────────
+    match /adminOrders/{orderId} {
+      allow get:  if isAdminOrManager()
+                  || (isExecutor() && resource.data.status == 'progress');
+
+      // Executor должен запрашивать с фильтром status == 'progress',
+      // иначе правило get отклонит каждый несовпадающий документ
+      // и весь запрос упадёт с permission-denied.
+      allow list: if isAdminOrManager()
+                  || (isExecutor() && resource.data.status == 'progress');
+
+      allow create: if isAdminOrManager();
+
+      allow update: if isAdmin()
+                    || isManager()
+                    || (isExecutor()
+                        && resource.data.status == 'progress'
+                        && request.resource.data.status == 'ready'
+                        && changedKeys().hasOnly(['status', 'updatedAt', 'history']));
+
+      allow delete: if isAdmin();
+    }
+
+
+    // ───────────────────────────────────────────────────────────────
+    //  EMPLOYEES  (сотрудники, авансы, журнал работ)
+    // ───────────────────────────────────────────────────────────────
+    match /employees/{employeeId} {
+      allow read:  if isAdminOrManager();
+      allow write: if isAdminOrManager();
+    }
+
+
+    // ───────────────────────────────────────────────────────────────
+    //  CATALOG  (прайс-листы, наценки серий)
+    //  Менеджер читает для расчёта стоимости; изменять может только Админ.
+    // ───────────────────────────────────────────────────────────────
+    match /catalog/{document=**} {
+      allow read:  if isAdminOrManager();
+      allow write: if isAdmin();
+    }
+
+
+    // ───────────────────────────────────────────────────────────────
+    //  DEBTS  (дебиторская задолженность / финансы)
+    // ───────────────────────────────────────────────────────────────
+    match /debts/{debtId} {
+      allow read:  if isAdminOrManager();
+      allow write: if isAdmin();
+    }
+
+
+    // ───────────────────────────────────────────────────────────────
+    //  CATCH-ALL — всё, что не описано выше, закрыто
+    // ───────────────────────────────────────────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "systemPrompt": "Ты — ведущий инженер проекта MATRELAX. Твоя цель — развитие системы для 4-х ролей (Админ, Менеджер, Клиент, Исполнитель). Принципы: 1. Безопасность данных (авторизация). 2. Консистентность (атомарные транзакции при взятии заказов). 3. Масштабируемость (переход на Firebase Firestore). Всегда проверяй права доступа и предлагай решения, минимизирующие ошибки в коде.",
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "./"]
+    }
+  },
+  "theme": "light-ansi",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell -NoProfile -WindowStyle Hidden -Command \"Add-Type -AssemblyName System.Windows.Forms; $n = New-Object System.Windows.Forms.NotifyIcon; $n.Icon = [System.Drawing.SystemIcons]::Information; $n.BalloonTipTitle = 'Claude Code'; $n.BalloonTipText = 'Задача MATRELAX выполнена'; $n.Visible = $true; $n.ShowBalloonTip(4000); Start-Sleep -Milliseconds 4500; $n.Dispose()\"",
+            "shell": "powershell",
+            "timeout": 10,
+            "async": true
+          }
+        ]
+      }
+    ]
+  }
+}

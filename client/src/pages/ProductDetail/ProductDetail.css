@@ -1,0 +1,263 @@
+.pd-page {
+  min-height: 100dvh;
+  background: var(--bg);
+}
+
+/* Fixed background image */
+.pd-image {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 46dvh;
+  background: var(--surface);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pd-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.pd-back, .pd-close {
+  position: absolute;
+  top: calc(16px + var(--safe-top));
+  width: 40px;
+  height: 40px;
+  background: rgba(0,0,0,0.5);
+  border-radius: 50%;
+  color: white;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(8px);
+  touch-action: manipulation;
+  z-index: 6;
+}
+.pd-back { left: 16px; }
+.pd-close { right: 16px; }
+
+/* Body inside BottomSheet */
+.pd-series {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 4px;
+}
+.pd-name {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  line-height: 1.2;
+}
+
+/* Specs */
+.pd-specs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.pd-specs::-webkit-scrollbar { display: none; }
+.pd-spec-tile {
+  flex-shrink: 0;
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid var(--border);
+}
+.pd-spec-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+.pd-spec-val {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Description */
+.pd-desc-toggle {
+  background: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 0;
+  margin-bottom: 8px;
+  touch-action: manipulation;
+}
+.pd-desc-long {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+/* Section */
+.pd-section {
+  margin-bottom: 20px;
+}
+.pd-section-title {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+
+/* Sizes */
+.pd-sizes {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+.pd-size-btn {
+  flex-shrink: 0;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  touch-action: manipulation;
+  transition: all 0.15s;
+}
+.pd-size-btn--active {
+  background: var(--bg);
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 1px var(--text-primary) inset;
+}
+
+/* Fabrics */
+.pd-fabrics {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+.pd-fabric-btn {
+  flex-shrink: 0;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  touch-action: manipulation;
+  transition: all 0.15s;
+}
+.pd-fabric-btn--active {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+  box-shadow: 0 0 0 1px var(--text-primary) inset;
+}
+.pd-fabric-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Extra 10cm toggle */
+.pd-extra-toggle {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 0.15s;
+}
+.pd-extra-toggle--active {
+  border-color: var(--text-primary);
+}
+.pd-extra-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pd-extra-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+.pd-extra-price {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.pd-toggle {
+  width: 44px;
+  height: 26px;
+  background: var(--surface-3);
+  border-radius: 13px;
+  position: relative;
+  transition: background 0.2s;
+}
+.pd-toggle::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  top: 3px;
+  left: 3px;
+  transition: transform 0.2s;
+}
+.pd-toggle--on {
+  background: var(--accent);
+}
+.pd-toggle--on::after {
+  transform: translateX(18px);
+}
+
+/* Related products — horizontal scroll row */
+.pd-related-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin: 0 -20px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+/* Fixed bottom bar — above the page sheet (z-index > 20) */
+.pd-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  padding: 12px 20px calc(12px + var(--safe-bottom));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 30;
+}
+.pd-bottom-size {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.price-btn--added {
+  background: #16a34a;
+}

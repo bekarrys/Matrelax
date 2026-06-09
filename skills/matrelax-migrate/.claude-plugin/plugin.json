@@ -1,0 +1,5 @@
+{
+  "name": "matrelax-migrate",
+  "description": "Seed Firestore from local JSON files in server/data/ (products, orders, staff)",
+  "version": "1.0.0"
+}
