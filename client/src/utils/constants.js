@@ -1,13 +1,18 @@
 export const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export const STATUS = {
+  NEW: 'new',
   PROGRESS: 'progress',
   READY: 'ready',
   DELIVERY: 'delivery',
   DELIVERED: 'delivered',
 };
 
+// Порядок жизненного цикла (для чипов-фильтров и переходов)
+export const STATUS_ORDER = [STATUS.NEW, STATUS.PROGRESS, STATUS.READY, STATUS.DELIVERY, STATUS.DELIVERED];
+
 export const STATUS_LABELS = {
+  [STATUS.NEW]: 'Новый',
   [STATUS.PROGRESS]: 'В работе',
   [STATUS.READY]: 'Готов',
   [STATUS.DELIVERY]: 'Доставка',
@@ -15,6 +20,7 @@ export const STATUS_LABELS = {
 };
 
 export const STATUS_COLORS = {
+  [STATUS.NEW]: 'var(--accent)',
   [STATUS.PROGRESS]: 'var(--status-progress)',
   [STATUS.READY]: 'var(--status-ready)',
   [STATUS.DELIVERY]: 'var(--status-delivery)',
@@ -22,10 +28,27 @@ export const STATUS_COLORS = {
 };
 
 export const STATUS_BG = {
+  [STATUS.NEW]: 'var(--accent-tint)',
   [STATUS.PROGRESS]: 'var(--status-progress-bg)',
   [STATUS.READY]: 'var(--status-ready-bg)',
   [STATUS.DELIVERY]: 'var(--status-delivery-bg)',
   [STATUS.DELIVERED]: 'var(--status-delivered-bg)',
+};
+
+// Человекочитаемые метки полей для журнала изменений заказа
+export const FIELD_LABELS = {
+  customerName: 'Имя клиента',
+  customerPhone: 'Телефон',
+  notes: 'Заметки',
+  salesPoint: 'Точка продаж',
+  deliveryType: 'Доставка',
+  deliveryAddress: 'Адрес доставки',
+  discount: 'Скидка',
+  totalAmount: 'Сумма',
+  paidAmount: 'Оплачено',
+  balance: 'Остаток',
+  items: 'Позиции',
+  status: 'Статус',
 };
 
 export const SALES_POINTS = {

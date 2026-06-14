@@ -35,6 +35,7 @@ export default function CreateOrder() {
   const [form, setForm] = useState({
     salesPoint: '',
     orderType: 'sale',
+    customerName: '',
     customerPhone: '',
     clientCategory: 'regular',
     items: initialItems,
@@ -43,7 +44,7 @@ export default function CreateOrder() {
     paymentType: 'paid',
     paidAmount: 0,
     deliveryType: 'pickup',
-    status: STATUS.PROGRESS,
+    status: STATUS.NEW,
     notes: '',
   });
 
@@ -103,7 +104,7 @@ export default function CreateOrder() {
         paidAmount: form.paidAmount || 0,
         balance,
       };
-      const order = await api.orders.create(orderData);
+      const order = await api.adminOrders.create(orderData);
       setCreatedOrder(order);
       setShowReceipt(true);
     } catch (err) {
@@ -166,8 +167,17 @@ export default function CreateOrder() {
       case 2:
         return (
           <div className="step-content">
-            <h2>Телефон клиента</h2>
-            <p className="step-desc">Введите номер телефона клиента</p>
+            <h2>Клиент</h2>
+            <p className="step-desc">Имя и телефон клиента</p>
+            <div className="form-field-wide">
+              <label>Имя клиента</label>
+              <input
+                type="text"
+                value={form.customerName}
+                onChange={(e) => updateForm({ customerName: e.target.value })}
+                placeholder="Напр. Иван"
+              />
+            </div>
             <div className="form-field-wide">
               <label>Номер телефона</label>
               <PhoneInput

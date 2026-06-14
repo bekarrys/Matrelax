@@ -4,12 +4,44 @@ import { api } from '../../utils/api';
 import { RoleGuard } from '../../components/guards/RoleGuard';
 import {
   SALES_POINTS, ORDER_TYPES, CLIENT_CATEGORIES, PAYMENT_TYPES, DELIVERY_TYPES,
-  STATUS, STATUS_LABELS, formatPrice, formatDate, formatDateTime
+  STATUS, STATUS_ORDER, STATUS_LABELS, FIELD_LABELS,
+  formatPrice, formatDateTime,
 } from '../../utils/constants';
 import StatusBadge from '../../components/StatusBadge/StatusBadge';
 import Receipt from '../../components/Receipt/Receipt';
-import { ArrowLeft, Save, X, Trash2, RotateCcw, Receipt as ReceiptIcon } from 'lucide-react';
+import { ArrowLeft, Save, X, Trash2, Lock, Unlock, Receipt as ReceiptIcon, ChevronRight } from 'lucide-react';
 import './OrderDetails.css';
+
+function recomputeTotals(f) {
+  const itemsTotal = (f.items || []).reduce(
+    (s, i) => s + ((i.price || 0) + (i.surcharge || 0)) * (i.quantity || 1), 0);
+  const totalAmount = itemsTotal + (f.deliveryFee || 0) - (f.discount || 0);
+  return { totalAmount, balance: totalAmount - (f.paidAmount || 0) };
+}
+
+function fmtVal(v) {
+  if (v === null || v === undefined || v === '') return '—';
+  return String(v);
+}
+
+function renderHistory(entry) {
+  const who = entry.by || '';
+  const when = formatDateTime(entry.at || entry.timestamp);
+  switch (entry.action) {
+    case 'created':
+      return `Создан · ${who} · ${when}`;
+    case 'status':
+      return `Статус: ${STATUS_LABELS[entry.from] || entry.from} → ${STATUS_LABELS[entry.to] || entry.to} · ${who} · ${when}`;
+    case 'edit':
+      return `${FIELD_LABELS[entry.field] || entry.field}: ${fmtVal(entry.from)} → ${fmtVal(entry.to)} · ${who} · ${when}`;
+    case 'unlock':
+      return `🔓 Разблокировано для правок · причина: «${entry.reason}» · ${who} · ${when}`;
+    case 'updated':
+      return `Изменён · ${who} · ${when}`;
+    default:
+      return `${entry.action} · ${who} · ${when}`;
+  }
+}
 
 export default function OrderDetails() {
   const { id } = useParams();
@@ -21,81 +53,118 @@ export default function OrderDetails() {
   const [showReceipt, setShowReceipt] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState(null);
+  const [error, setError] = useState('');
+  const [unlockOpen, setUnlockOpen] = useState(false);
+  const [unlockReason, setUnlockReason] = useState('');
+  const [unlockBusy, setUnlockBusy] = useState(false);
 
   useEffect(() => {
     fetchOrder();
-    api.catalog.get().then(setCatalog).catch(console.error);
+    api.catalog.get().then(setCatalog).catch(() => {});
   }, [id]);
 
-  const fetchOrder = async () => {
+  async function fetchOrder() {
     try {
-      const data = await api.orders.get(id);
+      const data = await api.adminOrders.get(id);
       setOrder(data);
       setForm(data);
     } catch (err) {
-      console.error(err);
-      alert('Ошибка загрузки заказа');
-      navigate('/orders');
+      setError(err.message || 'Ошибка загрузки заказа');
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const updateForm = (fields) => setForm(prev => ({ ...prev, ...fields }));
+  const updateForm = (fields) => setForm((p) => ({ ...p, ...fields }));
 
-  const handleSave = async () => {
+  const itemsEditable = order && (order.status === STATUS.NEW || order.itemsUnlocked === true);
+
+  async function handleSave() {
     setSaving(true);
+    setError('');
     try {
-      const updated = await api.orders.update(id, form);
+      const { totalAmount, balance } = recomputeTotals(form);
+      const updated = await api.adminOrders.update(id, { ...form, totalAmount, balance });
       setOrder(updated);
+      setForm(updated);
       setEditMode(false);
     } catch (err) {
-      alert('Ошибка сохранения: ' + err.message);
+      setError(err.message || 'Ошибка сохранения');
     } finally {
       setSaving(false);
     }
-  };
+  }
 
-  const handleCloseOrder = async () => {
-    if (!confirm('Закрыть заказ?')) return;
+  function updateItem(idx, fields) {
+    const items = form.items.map((it, i) => (i === idx ? { ...it, ...fields } : it));
+    updateForm({ items });
+  }
+
+  async function recalcItem(idx) {
+    const item = form.items[idx];
+    if (!item.modelId || !item.size) return;
     try {
-      await api.orders.update(id, { status: STATUS.DELIVERED });
-      fetchOrder();
-    } catch (err) {
-      alert('Ошибка: ' + err.message);
-    }
-  };
+      const r = await api.catalog.calculate({ modelId: item.modelId, size: item.size, extra10cm: item.extra10cm });
+      updateItem(idx, { price: r.basePrice, surcharge: r.surcharge });
+    } catch { /* ignore */ }
+  }
 
-  const handleReopen = async () => {
+  async function handleAdvanceStatus() {
+    const idx = STATUS_ORDER.indexOf(order.status);
+    const next = STATUS_ORDER[idx + 1];
+    if (!next) return;
+    setError('');
     try {
-      await api.orders.update(id, { status: STATUS.PROGRESS });
-      fetchOrder();
+      const updated = await api.adminOrders.updateStatus(id, next);
+      setOrder(updated);
+      setForm(updated);
     } catch (err) {
-      alert('Ошибка: ' + err.message);
+      setError(err.message || 'Не удалось сменить статус');
     }
-  };
+  }
 
-  const handleDelete = async () => {
+  async function handleUnlock() {
+    const reason = unlockReason.trim();
+    if (!reason) return;
+    setUnlockBusy(true);
+    setError('');
+    try {
+      const updated = await api.adminOrders.unlock(id, reason);
+      setOrder(updated);
+      setForm(updated);
+      setUnlockOpen(false);
+      setUnlockReason('');
+      setEditMode(true);
+    } catch (err) {
+      setError(err.message || 'Не удалось разблокировать');
+    } finally {
+      setUnlockBusy(false);
+    }
+  }
+
+  async function handleDelete() {
     if (!confirm('Удалить заказ? Это действие необратимо.')) return;
     try {
-      await api.orders.delete(id);
+      await api.adminOrders.delete(id);
       navigate('/orders');
     } catch (err) {
-      alert('Ошибка: ' + err.message);
+      setError(err.message || 'Ошибка удаления');
     }
-  };
+  }
 
   if (loading) return <div className="loading-screen">Загрузка...</div>;
-  if (!order) return <div className="loading-screen">Заказ не найден</div>;
+  if (!order) return <div className="loading-screen">{error || 'Заказ не найден'}</div>;
 
-  const totalItems = (order.items || []).reduce((sum, i) => sum + (i.quantity || 1), 0);
+  const src = editMode ? form : order;
+  const totals = recomputeTotals(src);
+  const nextStatus = STATUS_ORDER[STATUS_ORDER.indexOf(order.status) + 1];
+  const totalItems = (src.items || []).reduce((s, i) => s + (i.quantity || 1), 0);
 
   return (
     <div className="order-details-page">
       <div className="page-header">
         <button className="btn-back" onClick={() => navigate('/orders')}>
-          <ArrowLeft size={18} />
-          Назад
+          <ArrowLeft size={18} /> Назад
         </button>
         <div className="page-header-info">
           <h1>{order.orderNumber}</h1>
@@ -104,147 +173,228 @@ export default function OrderDetails() {
         <div className="page-actions">
           {!editMode ? (
             <>
-              <button className="btn-secondary" onClick={() => setShowReceipt(true)}>
-                <ReceiptIcon size={16} />
-                Квитанция
+              <button className="btn-ink" onClick={() => setShowReceipt(true)}>
+                <ReceiptIcon size={16} /> Квитанция
               </button>
-              <button className="btn-secondary" onClick={() => setEditMode(true)}>
-                <Save size={16} />
+              <button className="btn-ink" onClick={() => { setForm(order); setEditMode(true); }}>
                 Редактировать
               </button>
             </>
           ) : (
             <>
-              <button className="btn-secondary" onClick={() => { setForm(order); setEditMode(false); }}>
-                <X size={16} />
-                Отмена
+              <button className="btn-ink" onClick={() => { setForm(order); setEditMode(false); }}>
+                <X size={16} /> Отмена
               </button>
               <button className="btn-primary" onClick={handleSave} disabled={saving}>
-                <Save size={16} />
-                Сохранить
+                <Save size={16} /> {saving ? 'Сохранение…' : 'Сохранить'}
               </button>
             </>
           )}
         </div>
       </div>
 
+      {error && <div className="od-error">{error}</div>}
+
       <div className="order-details-grid">
-        {/* Info Card */}
+        {/* Клиент / инфо */}
         <div className="detail-card">
-          <h3>Информация</h3>
+          <h3>Клиент</h3>
           <div className="detail-rows">
-            <DetailRow label="Точка" value={SALES_POINTS[order.salesPoint]} />
-            <DetailRow label="Тип" value={ORDER_TYPES[order.orderType]} />
-            <DetailRow label="Телефон" value={`+${order.customerPhone}`} />
-            <DetailRow label="Категория" value={CLIENT_CATEGORIES[order.clientCategory]} />
+            {editMode ? (
+              <>
+                <EditRow label="Имя">
+                  <input type="text" value={form.customerName || ''} onChange={(e) => updateForm({ customerName: e.target.value })} />
+                </EditRow>
+                <EditRow label="Телефон">
+                  <input type="text" value={form.customerPhone || ''} onChange={(e) => updateForm({ customerPhone: e.target.value })} />
+                </EditRow>
+              </>
+            ) : (
+              <>
+                <DetailRow label="Имя" value={order.customerName || '—'} />
+                <DetailRow label="Телефон" value={order.customerPhone ? `+${order.customerPhone}` : '—'} />
+              </>
+            )}
+            <DetailRow label="Точка" value={SALES_POINTS[order.salesPoint] || order.salesPoint} />
+            <DetailRow label="Тип" value={ORDER_TYPES[order.orderType] || '—'} />
+            <DetailRow label="Категория" value={CLIENT_CATEGORIES[order.clientCategory] || '—'} />
             <DetailRow label="Создан" value={formatDateTime(order.createdAt)} />
             <DetailRow label="Обновлён" value={formatDateTime(order.updatedAt)} />
           </div>
         </div>
 
-        {/* Items Card */}
+        {/* Позиции */}
         <div className="detail-card">
-          <h3>Позиции ({totalItems} шт.)</h3>
+          <div className="detail-card-head">
+            <h3>Позиции ({totalItems} шт.)</h3>
+            {editMode && !itemsEditable && (
+              <span className="lock-pill"><Lock size={13} /> Заблокировано (в работе)</span>
+            )}
+          </div>
+
+          {editMode && !itemsEditable && (
+            <button className="btn-ink btn-unlock" onClick={() => setUnlockOpen(true)}>
+              <Unlock size={15} /> Разблокировать для правок
+            </button>
+          )}
+
           <div className="detail-items">
-            {(order.items || []).map((item, idx) => {
+            {(src.items || []).map((item, idx) => {
+              const editable = editMode && itemsEditable;
+              if (editable) {
+                return (
+                  <div key={idx} className="detail-item edit">
+                    <select value={item.modelId || ''} onChange={(e) => updateItem(idx, { modelId: e.target.value, size: '', price: 0 })}>
+                      <option value="">Модель</option>
+                      {catalog && Object.entries(catalog.models).map(([mid, m]) => (
+                        <option key={mid} value={mid}>{m.name}</option>
+                      ))}
+                    </select>
+                    <select value={item.size || ''} onChange={(e) => updateItem(idx, { size: e.target.value })} onBlur={() => recalcItem(idx)}>
+                      <option value="">Размер</option>
+                      {catalog?.sizes.map((s) => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                    <select value={item.extra10cm ? 'yes' : 'no'} onChange={(e) => updateItem(idx, { extra10cm: e.target.value === 'yes' })} onBlur={() => recalcItem(idx)}>
+                      <option value="no">−10см</option>
+                      <option value="yes">+10см</option>
+                    </select>
+                    <input type="number" min="1" value={item.quantity || 1} onChange={(e) => updateItem(idx, { quantity: Math.max(1, Number(e.target.value)) })} />
+                  </div>
+                );
+              }
               const modelName = catalog?.models[item.modelId]?.name || item.modelId;
-              const unitPrice = item.price + item.surcharge;
+              const unit = (item.price || 0) + (item.surcharge || 0);
               return (
                 <div key={idx} className="detail-item">
                   <div className="detail-item-name">{modelName}</div>
-                  <div className="detail-item-meta">
-                    {item.size}{catalog?.sizeDisplay}{item.extra10cm ? ' +10см' : ''}
-                  </div>
-                  <div className="detail-item-price">
-                    {formatPrice(unitPrice)} × {item.quantity} = {formatPrice(unitPrice * item.quantity)}
-                  </div>
+                  <div className="detail-item-meta">{item.size}{item.extra10cm ? ' +10см' : ''}</div>
+                  <div className="detail-item-price">{formatPrice(unit)} × {item.quantity} = {formatPrice(unit * item.quantity)}</div>
                 </div>
               );
             })}
           </div>
         </div>
 
-        {/* Finance Card */}
+        {/* Финансы */}
         <div className="detail-card">
           <h3>Финансы</h3>
           <div className="detail-rows">
-            <DetailRow label="Доставка" value={formatPrice(order.deliveryFee || 0)} />
-            {order.discount > 0 && <DetailRow label="Скидка" value={`-${formatPrice(order.discount)}`} accent="negative" />}
-            <DetailRow label="Итого" value={formatPrice(order.totalAmount)} accent="grand" />
-            <DetailRow label="Оплачено" value={formatPrice(order.paidAmount || 0)} accent="positive" />
+            {editMode ? (
+              <>
+                <EditRow label="Скидка"><input type="number" min="0" value={form.discount || 0} onChange={(e) => updateForm({ discount: Number(e.target.value) })} /></EditRow>
+                <EditRow label="Оплачено"><input type="number" min="0" value={form.paidAmount || 0} onChange={(e) => updateForm({ paidAmount: Number(e.target.value) })} /></EditRow>
+              </>
+            ) : (
+              <>
+                <DetailRow label="Доставка" value={formatPrice(order.deliveryFee || 0)} />
+                {order.discount > 0 && <DetailRow label="Скидка" value={`−${formatPrice(order.discount)}`} accent="negative" />}
+                <DetailRow label="Оплачено" value={formatPrice(order.paidAmount || 0)} accent="positive" />
+              </>
+            )}
+            <DetailRow label="Итого" value={formatPrice(totals.totalAmount)} accent="grand" />
             <DetailRow
-              label={order.balance > 0 ? 'Долг' : 'Сдача'}
-              value={formatPrice(Math.abs(order.balance || 0))}
-              accent={order.balance > 0 ? 'warning' : 'positive'}
+              label={totals.balance > 0 ? 'Долг' : 'Сдача'}
+              value={formatPrice(Math.abs(totals.balance))}
+              accent={totals.balance > 0 ? 'warning' : 'positive'}
             />
           </div>
         </div>
 
-        {/* Delivery Card */}
+        {/* Получение */}
         <div className="detail-card">
           <h3>Получение</h3>
           <div className="detail-rows">
-            <DetailRow label="Способ" value={DELIVERY_TYPES[order.deliveryType]} />
-            <DetailRow label="Оплата" value={PAYMENT_TYPES[order.paymentType]} />
+            {editMode ? (
+              <EditRow label="Способ">
+                <select value={form.deliveryType || 'pickup'} onChange={(e) => updateForm({ deliveryType: e.target.value })}>
+                  {Object.entries(DELIVERY_TYPES).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                </select>
+              </EditRow>
+            ) : (
+              <DetailRow label="Способ" value={DELIVERY_TYPES[order.deliveryType] || '—'} />
+            )}
+            <DetailRow label="Оплата" value={PAYMENT_TYPES[order.paymentType] || '—'} />
+            <EditRow label="Заметки">
+              {editMode
+                ? <textarea rows={2} value={form.notes || ''} onChange={(e) => updateForm({ notes: e.target.value })} />
+                : <span>{order.notes || '—'}</span>}
+            </EditRow>
           </div>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="order-actions-bar">
-        {order.status !== STATUS.DELIVERED && (
-          <button className="btn-warning" onClick={handleCloseOrder}>
-            Закрыть заказ
-          </button>
-        )}
-        {order.status === STATUS.DELIVERED && (
-          <button className="btn-info" onClick={handleReopen}>
-            <RotateCcw size={16} />
-            Переоткрыть
-          </button>
-        )}
-        <RoleGuard roles={['admin']}>
-          <button className="btn-danger" onClick={handleDelete}>
-            <Trash2 size={16} />
-            Удалить
-          </button>
-        </RoleGuard>
-      </div>
+      {/* Управление статусом / удаление */}
+      {!editMode && (
+        <div className="order-actions-bar">
+          {nextStatus && (
+            <button className="btn-primary" onClick={handleAdvanceStatus}>
+              {STATUS_LABELS[order.status]} <ChevronRight size={15} /> {STATUS_LABELS[nextStatus]}
+            </button>
+          )}
+          <RoleGuard roles={['admin']}>
+            <button className="btn-danger" onClick={handleDelete}>
+              <Trash2 size={16} /> Удалить
+            </button>
+          </RoleGuard>
+        </div>
+      )}
 
-      {/* History */}
+      {/* История изменений */}
       {order.history && order.history.length > 0 && (
         <div className="detail-card history-card">
           <h3>История изменений</h3>
           <div className="history-list">
-            {order.history.map((entry, idx) => (
-              <div key={idx} className="history-item">
-                <span className="history-action">{entry.action}</span>
-                <span className="history-time">{formatDateTime(entry.timestamp)}</span>
-              </div>
+            {[...order.history].reverse().map((entry, idx) => (
+              <div key={idx} className="history-item">{renderHistory(entry)}</div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Receipt Modal */}
-      {showReceipt && (
-        <Receipt order={order} onClose={() => setShowReceipt(false)} />
+      {/* Модалка разблокировки */}
+      {unlockOpen && (
+        <div className="od-modal-overlay" onClick={() => setUnlockOpen(false)}>
+          <div className="od-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Разблокировать позиции</h3>
+            <p className="od-modal-desc">Заказ в работе. Укажите причину правки — она попадёт в журнал.</p>
+            <textarea
+              rows={3}
+              autoFocus
+              placeholder="Напр.: клиент попросил изменить размер"
+              value={unlockReason}
+              onChange={(e) => setUnlockReason(e.target.value)}
+            />
+            <div className="od-modal-actions">
+              <button className="btn-ink" onClick={() => setUnlockOpen(false)}>Отмена</button>
+              <button className="btn-primary" onClick={handleUnlock} disabled={!unlockReason.trim() || unlockBusy}>
+                {unlockBusy ? 'Разблокировка…' : 'Разблокировать'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
+
+      {showReceipt && <Receipt order={order} onClose={() => setShowReceipt(false)} />}
     </div>
   );
 }
 
 function DetailRow({ label, value, accent }) {
   const classes = ['detail-row'];
-  if (accent === 'grand') classes.push('grand');
-  if (accent === 'negative') classes.push('negative');
-  if (accent === 'positive') classes.push('positive');
-  if (accent === 'warning') classes.push('warning');
-
+  if (accent) classes.push(accent);
   return (
     <div className={classes.join(' ')}>
       <span>{label}</span>
       <span>{value}</span>
+    </div>
+  );
+}
+
+function EditRow({ label, children }) {
+  return (
+    <div className="detail-row edit-row">
+      <span>{label}</span>
+      <span className="edit-control">{children}</span>
     </div>
   );
 }

@@ -95,7 +95,15 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify({ status }),
     }),
+    unlock: (id, reason) => request(`/admin-orders/${id}/unlock`, {
+      method: 'PATCH',
+      body: JSON.stringify({ reason }),
+    }),
     delete: (id) => request(`/admin-orders/${id}`, { method: 'DELETE' }),
+  },
+  analytics: {
+    // period: 'day' | 'week' | 'month' — только admin
+    summary: (period) => request(`/analytics/summary?period=${period}`),
   },
   reports: {
     daily: (date) => request(`/reports/daily${date ? `/${date}` : ''}`),
