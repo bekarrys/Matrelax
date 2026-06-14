@@ -185,11 +185,14 @@ img {
   width: 100%;
   min-height: 52px;
   touch-action: manipulation;
-  transition: transform 0.1s, background 0.15s;
+  box-shadow: var(--shadow-glow);
+  transition: transform 0.1s, background 0.15s, box-shadow 0.15s;
 }
+.btn-primary:hover { background: var(--accent-hover); }
 .btn-primary:active {
   transform: scale(0.97);
   background: var(--accent-hover);
+  box-shadow: 0 2px 12px var(--accent-glow);
 }
 
 .btn-secondary {
@@ -207,6 +210,25 @@ img {
   touch-action: manipulation;
 }
 
+.btn-ink {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  touch-action: manipulation;
+  transition: transform 0.1s, background 0.15s, border-color 0.15s;
+}
+.btn-ink:hover { background: var(--surface-3); border-color: var(--border-strong); }
+.btn-ink:active { transform: scale(0.97); }
+
 .price-btn {
   background: var(--accent);
   color: #fff;
@@ -223,6 +245,7 @@ img {
   white-space: nowrap;
   transition: transform 0.1s, background 0.15s;
   touch-action: manipulation;
+  box-shadow: var(--shadow-glow);
 }
 .price-btn:active {
   transform: scale(0.97) translateY(0);
