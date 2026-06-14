@@ -6,14 +6,14 @@ function formatPrice(price) {
   return new Intl.NumberFormat('ru-KZ').format(price) + ' ₸';
 }
 
-export default function ProductCard({ product, animIndex = 0 }) {
+export default function ProductCard({ product, index }) {
   const navigate = useNavigate();
   const minPrice = product.sizes ? Math.min(...product.sizes.map((s) => s.price)) : 0;
 
   return (
     <div
       className="product-card"
-      style={{ animationDelay: `${animIndex * 50}ms` }}
+      style={{ '--i': index ?? 0 }}
       onClick={() => navigate(`/product/${product.id}`)}
     >
       <div className="product-card__image">

@@ -112,7 +112,7 @@ export default function Home() {
                   <div key={i} className="product-card-skeleton skeleton" />
                 ))
               : visibleProducts.map((product, i) => (
-                  <ProductCard key={product.id} product={product} animIndex={i} />
+                  <ProductCard key={product.id} product={product} index={i} />
                 ))}
           </div>
         )}
