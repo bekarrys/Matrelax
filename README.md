@@ -3,6 +3,8 @@
 > **Made in Kazakhstan** | Mattress Production & Sales Automation
 
 Полнофункциональное веб-приложение для управления заказами матрасной компании **MATRELAX**.
+Состоит из публичного интернет-магазина и внутренней панели персонала, работающих на
+общем Express-бэкенде с Firebase Authentication и Cloud Firestore.
 
 ---
 
@@ -28,20 +30,15 @@
 
 ```bash
 npm run install:all
-``` 
-
-Устанавливает зависимости:
-- в корне (инструменты)
-- в `client/`
-- в `server/`
-
-### 2) Инициализация структуры хранения данных
-
-```bash
-npm run init:folders
 ```
 
-Создаёт директории для хранения JSON-данных на сервере.
+Устанавливает зависимости в корне, в `client/` и в `server/`.
+
+### 2) Настройка `.env`
+
+В корне проекта создайте файл `.env` с ключами Firebase (см. раздел
+[Переменные окружения](#переменные-окружения-env)). Без них сервер не подключится
+к Firestore, а вход вернёт `503`.
 
 ### 3) Запуск (клиент + сервер)
 
@@ -54,45 +51,62 @@ npm run dev
 - **Клиент:** http://localhost:3000
 - **API:** http://localhost:3001/api
 
+### Прод-сборка
+
+```bash
+npm run build         # собирает client/dist
+npm run dev:server    # сервер раздаёт client/dist + SPA-fallback
+```
+
+В продакшене сервер сам отдаёт собранный фронтенд из `client/dist`: статика
+плюс SPA-fallback (любой не-`/api` GET-запрос возвращает `index.html`).
+
 ### UI (DrinKit-style)
-Выполнены обновления интерфейса в стиле DrinKit:
+Обновления интерфейса витрины в стиле DrinKit:
 - корзина: фиксированный bottom bar + выбор оплаты
 - карточка товара: открытие как bottom sheet
-- общий стиль: таблетки (999px), caps убран, активные элементы с белой рамкой, bottom sheet анимация `slide up 300ms ease`
-
+- общий стиль: таблетки (999px), caps убран, активные элементы с белой рамкой,
+  анимация bottom sheet `slide up 300ms ease`
 
 ---
 
 ## Как работает приложение (в двух частях)
 
 ### Клиент (`client/`)
-- React 18 + Vite
-- роутинг (React Router)
-- хранение токена в `localStorage`
-- страницы: логин, заказы, сотрудники, отчёты, настройки
+- React 18 + Vite, React Router v6
+- Zustand для корзины (persist в `localStorage`)
+- Tailwind CSS, lucide-react, recharts
+- хранение токена Firebase в `localStorage`
+- **публичная витрина:** главная, карточка товара, корзина, оформление, статус заказа
+- **панель персонала:** заказы, создание заказа, детали, сотрудники, отчёты, настройки
 
 ### Сервер (`server/`)
-- Express.js
-- защита маршрутов JWT
-- чтение/запись данных в JSON-файлы в `server/data/`
+- Express.js (порт 3001)
+- Firebase Admin SDK — Firestore + проверка ID-токенов
+- защита маршрутов через middleware `verifyToken` + `requireRole`
 
 ---
 
 ## Роли и авторизация
 
-Доступ ко всем защищённым страницам фронтенда регулируется JWT.
+Аутентификация персонала построена на **Firebase Authentication** (email/password).
+Сервер логинит пользователя через Firebase REST (`signInWithPassword`) и возвращает
+ID-токен; роль хранится в **Custom Claims** токена (`role`).
 
-- Логин/пароль администратора берутся из переменных окружения (если не заданы — используются значения по умолчанию).
+| Роль | Доступ |
+|------|--------|
+| `admin` | Полный доступ: заказы, сотрудники, отчёты, каталог, пользователи |
+| `manager` | Заказы, сотрудники, отчёты, каталог |
+| `executor` | Цех: видит заказы в работе, переводит `progress → ready` (вход по PIN) |
+| Публичный | Витрина, корзина, оформление, статус заказа |
 
-**По умолчанию:****
-- **Логин:** `admin`
-- **Пароль:** `matrelax2026`
-
-**Механика:}
-- Клиент отправляет `POST /api/auth/login`.
-- Сервер возвращает `token`.
+**Механика:**
+- Клиент отправляет `POST /api/auth/login` с `{ email, password }`.
+- Сервер возвращает `{ token, refreshToken, email, displayName, role }`.
 - Токен передаётся заголовком `Authorization: Bearer <token>`.
-- При `401` клиент очищает токен и редиректит на `/login`.
+- Защищённые маршруты проверяют токен (`verifyToken`) и роль (`requireRole`).
+- Исполнитель цеха использует PIN-заголовок `x-workshop-pin` (env `WORKSHOP_PIN`,
+  по умолчанию `1234`) — отдельный аккаунт Firebase не нужен.
 
 ---
 
@@ -100,61 +114,27 @@ npm run dev
 
 ### Публичные
 
-- `POST /api/auth/login`
-  - body: `{ login, password }`
-  - returns: `{ success, token, login }`
+- `POST /api/auth/login` — body `{ email, password }` → `{ token, refreshToken, email, displayName, role }`
+- `GET /api/auth/verify` — проверка токена → `{ valid, email, role, uid }`
+- `GET /api/products` — публичный каталог товаров (Firestore `products`)
+- `POST /api/payment` — вебхуки оплаты (Kaspi / Freedom)
 
-- `GET /api/auth/verify`
-  - protected на фронте, но в роуте возвращает данные (см. код)
+### PIN-защищённые (цех)
 
-- `GET /api/catalog`
-  - возвращает каталог цен из `server/data/catalog/prices.json`
+- `GET /api/orders` — заказы магазина для цеха (заголовок `x-workshop-pin`)
+- `PATCH /api/orders/:id` — смена статуса заказа
 
-- `POST /api/catalog/calculate`
-  - body: `{ modelId, size, extra10cm }`
-  - returns: `{ basePrice, surcharge, totalPrice, series }`
+### Firebase-защищённые (ID-токен + роль)
 
-### Защищённые (JWT)
+- `GET/POST/PUT/DELETE /api/admin-orders` — заказы персонала (Firestore `adminOrders`)
+- `GET/POST /api/employees`, `POST /api/employees/:id/advance`, `POST /api/employees/:id/worklog`
+- `GET /api/reports/daily/:date?`, `GET /api/reports/monthly/:month?`
+- `GET /api/catalog`, `POST /api/catalog/calculate`
+- `GET /api/auth/users` — список пользователей (только `admin`)
 
-Все ниже доступны только с валидным токеном:
+### Сервисные
 
-- `GET /api/orders`
-  - список заказов (registry.json)
-
-- `GET /api/orders/:id`
-  - детали конкретного заказа
-
-- `POST /api/orders`
-  - создание заказа
-  - сервер генерирует `orderNumber` и `id`
-  - сохраняет заказ в `orders/registry.json` и отдельным файлом `orders/<date>/<orderNumber>.json`
-
-- `PUT /api/orders/:id`
-  - обновление заказа (с историей действий)
-
-- `DELETE /api/orders/:id`
-  - удаление заказа из `registry.json`
-
-- `GET /api/employees`
-  - список сотрудников
-
-- `POST /api/employees`
-  - добавление сотрудника
-
-- `POST /api/employees/:id/advance`
-  - запись аванса сотруднику
-
-- `POST /api/employees/:id/worklog`
-  - запись рабочего лог-а сотруднику
-
-- `GET /api/reports/daily/:date?`
-  - суточный отчёт по дате (по умолчанию текущая дата)
-
-- `GET /api/reports/monthly/:month?`
-  - месячный отчёт по месяцу (по умолчанию текущий месяц)
-
-- `GET /api/health`
-  - health-check: `{ status: 'ok', timestamp }`
+- `GET /api/health` → `{ status: 'ok', timestamp, db: 'firestore' }`
 
 ---
 
@@ -162,29 +142,32 @@ npm run dev
 
 | Страница | Описание |
 |---|---|
-| `/login` | Авторизация администратора |
-| `/orders` | Kanban-доска заказов: **В работе → Готов → Доставка → Доставлен** |
-| `/orders/new` | Мастер создания заказа (9 шагов) |
-| `/orders/:id` | Детали заказа, редактирование, квитанция/выписка |
+| `/` | Витрина: каталог матрасов и подушек |
+| `/product/:id` | Карточка товара (bottom sheet) |
+| `/cart`, `/checkout` | Корзина и оформление заказа |
+| `/order-status/:id` | Статус заказа для покупателя |
+| `/login` | Авторизация персонала (Firebase) |
+| `/orders` | Доска заказов: **В работе → Готов → Доставка → Доставлен** |
+| `/orders/new` | Мастер создания заказа |
+| `/orders/:id` | Детали заказа, редактирование, квитанция |
 | `/employees` | Сотрудники, авансы, производительность |
 | `/reports` | Суточные и месячные отчёты |
-| `/settings` | Каталог цен и настройки/интеграции |
+| `/settings` | Каталог цен и настройки |
 
-Все страницы кроме `/login` защищены (токен обязателен).
+Страницы панели персонала защищены ролью; витрина доступна без авторизации.
 
 ---
 
 ## Каталог и расчёт цен
 
-Цены берутся из:
-
-- `server/data/catalog/prices.json`
+Цены берутся из `server/data/catalog/prices.json`.
 
 ### Логика
 
-- Для выбранной модели цена берётся по размеру (`sizes` содержит значения: 70–200 см).
-- Если включена опция **extra10cm**, добавляется наценка для серии:
-  - `catalog.series[model.series].surcharge10cm`
+- Для выбранной модели цена берётся по размеру (`sizes`: 70–200 см).
+- При опции **extra10cm** добавляется наценка серии: `catalog.series[model.series].surcharge10cm`.
+- Эндпоинт `POST /api/catalog/calculate` принимает `{ modelId, size, extra10cm }`
+  и возвращает `{ basePrice, surcharge, totalPrice, series }`.
 
 ### Сущности
 
@@ -195,28 +178,30 @@ npm run dev
 
 ## Хранение данных
 
-Сервер использует JSON-файлы.
+Основное хранилище — **Cloud Firestore** (через Firebase Admin SDK).
 
-Инициализируемые директории (создаются скриптом `init:folders`):
-- `server/data/orders/`
-- `server/data/staff/`
-- `server/data/finance/` *(в текущем коде не используется напрямую, но папка создаётся)*
-- `server/data/catalog/`
+Коллекции:
+- `adminOrders` — заказы персонала
+- `shopOrders` — заказы витрины
+- `products` — публичный каталог товаров
+- `employees` — сотрудники, авансы, worklog
+- `users` — пользователи и роли
 
-Ключевые файлы:
-- `server/data/orders/registry.json` — реестр заказов
-- `server/data/orders/<date>/<orderNumber>.json` — отдельный файл заказа
-- `server/data/staff/employees.json` — сотрудники, авансы и worklog
+Локальные JSON-файлы (`server/data/`) используются для каталога цен и как
+legacy-данные:
+- `server/data/catalog/prices.json` — прайс матрасов
+- `server/data/staff/employees.json`, `server/data/orders/registry.json` — legacy
 
 ---
 
 ## Архитектура проекта
 
 ```
-client/          → Vite + React 18 + React Router + компоненты UI
-server/          → Express.js + JWT auth + JSON file storage
-server/data/     → каталог цен, заказы, сотрудники, финансы
-scripts/         → утилиты (инициализация папок)
+client/          → Vite + React 18 + React Router + Zustand + Tailwind
+server/          → Express.js + Firebase Admin (Firestore + Auth)
+server/routes/   → auth, products, payment, orders, adminOrders, employees, reports, catalog
+server/data/     → каталог цен (prices.json) + legacy JSON
+docs/            → спеки и планы (design specs / implementation plans)
 ```
 
 ---
@@ -227,21 +212,24 @@ scripts/         → утилиты (инициализация папок)
 |---|---|
 | `npm run dev` | Запуск клиента и сервера параллельно |
 | `npm run dev:client` | Только клиент (порт 3000) |
-| `npm run dev:server` | Только сервер (порт 3001) |
-| `npm run build` | Сборка клиента для продакшена |
+| `npm run dev:server` | Только сервер (порт 3001, раздаёт `client/dist` в прод) |
+| `npm run build` | Сборка клиента (`client/dist`) |
+| `npm run build:client` | Алиас сборки клиента |
+| `npm run deploy` | lint + сборка + `firebase deploy` (hosting, firestore, functions) |
 | `npm run install:all` | Установка зависимостей в root/client/server |
-| `npm run init:folders` | Создание структуры папок данных на сервере |
 
 ---
 
 ## Переменные окружения (.env)
 
-Сервер использует:
-- `ADMIN_LOGIN` — логин админа (по умолчанию `admin`)
-- `ADMIN_PASSWORD` — пароль админа (по умолчанию `matrelax2026`)
-- `JWT_SECRET` — секрет для подписи токена (по умолчанию `matrelax-secret-key-2026`)
+Сервер (Firebase Admin):
+- `FIREBASE_PROJECT_ID` — ID проекта Firebase
+- `FIREBASE_SERVICE_ACCOUNT_BASE` *(или `GOOGLE_APPLICATION_CREDENTIALS`)* — сервисный аккаунт
+- `FIREBASE_WEB_API_KEY` — Web API Key для входа через Firebase REST
+- `WORKSHOP_PIN` — PIN исполнителя цеха (по умолчанию `1234`)
+- `PORT` — порт сервера (по умолчанию `3001`)
 
-Клиент (в Vite) использует:
+Клиент (Vite):
 - `VITE_API_URL` — базовый URL API (по умолчанию `'/api'`)
 
 ---
@@ -250,12 +238,11 @@ scripts/         → утилиты (инициализация папок)
 
 - `.gitignore`
 - `package.json` (root) — orchestrator команд
-- `client/` — React приложение
-- `server/` — Express API
-- `scripts/` — init скрипты
-- `server/data/` — каталог/заказы/сотрудники
+- `client/` — React-приложение (витрина + панель)
+- `server/` — Express API + Firebase Admin
+- `server/data/` — каталог цен и legacy JSON
+- `docs/` — спеки и планы
 
 ---
 
 *🛏️ MATRELAX — Sleep better, work smarter.*
-
