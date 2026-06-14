@@ -60,7 +60,7 @@
   align-items: center;
   gap: 12px;
   padding: 12px 16px 12px 44px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-strong);
   cursor: pointer;
   color: var(--text-primary);
 }
@@ -68,7 +68,7 @@
 
 .pl-product--inactive {
   opacity: 0.5;
-  background: var(--surface);
+  background: var(--bg);
 }
 
 .pl-product-main {

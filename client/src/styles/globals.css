@@ -106,6 +106,16 @@ button {
 input, textarea, select {
   font-family: inherit;
   outline: none;
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+input::placeholder, textarea::placeholder {
+  color: var(--text-tertiary);
+}
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
 }
 
 img {
