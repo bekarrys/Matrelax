@@ -3,18 +3,26 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   Bed, ShoppingBag, Users, BarChart3, Settings,
-  LogOut, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, Package,
+  LogOut, Menu, X, ChevronLeft, ChevronRight, LayoutDashboard, Package, Plus,
 } from 'lucide-react';
 import './Layout.css';
 
 const ALL_NAV = [
-  { path: '/dashboard', icon: LayoutDashboard, label: 'Дашборд',    roles: ['admin'] },
-  { path: '/orders',    icon: ShoppingBag,     label: 'Заказы',     roles: ['admin', 'manager'] },
-  { path: '/products',  icon: Package,         label: 'Каталог',    roles: ['admin'] },
-  { path: '/employees', icon: Users,           label: 'Сотрудники', roles: ['admin', 'manager'] },
-  { path: '/reports',   icon: BarChart3,       label: 'Отчёты',     roles: ['admin', 'manager'] },
-  { path: '/settings',  icon: Settings,        label: 'Настройки',  roles: ['admin', 'manager'] },
+  { path: '/orders/new', icon: Plus,            label: 'Новый заказ', roles: ['admin', 'manager'], accent: true },
+  { path: '/dashboard',  icon: LayoutDashboard, label: 'Аналитика',   roles: ['admin'] },
+  { path: '/orders',     icon: ShoppingBag,     label: 'Все заказы',  roles: ['admin', 'manager'] },
+  { path: '/products',   icon: Package,         label: 'Каталог',     roles: ['admin'] },
+  { path: '/employees',  icon: Users,           label: 'Сотрудники',  roles: ['admin', 'manager'] },
+  { path: '/reports',    icon: BarChart3,       label: 'Отчёты',      roles: ['admin', 'manager'] },
+  { path: '/settings',   icon: Settings,        label: 'Настройки',   roles: ['admin', 'manager'] },
 ];
+
+// «Новый заказ» — точное совпадение; «Все заказы» активна на /orders и /orders/:id, но не на /orders/new.
+function navActive(path, pathname) {
+  if (path === '/orders/new') return pathname === '/orders/new';
+  if (path === '/orders') return pathname.startsWith('/orders') && pathname !== '/orders/new';
+  return pathname.startsWith(path);
+}
 
 function userInitials(email = '') {
   return email.slice(0, 2).toUpperCase();
@@ -54,7 +62,7 @@ export default function Layout({ children }) {
             <Link
               key={item.path}
               to={item.path}
-              className={`nav-item ${location.pathname.startsWith(item.path) ? 'active' : ''}`}
+              className={`nav-item ${item.accent ? 'nav-item--accent' : ''} ${navActive(item.path, location.pathname) ? 'active' : ''}`}
               title={!sidebarOpen ? item.label : undefined}
             >
               <item.icon size={18} />
@@ -112,7 +120,7 @@ export default function Layout({ children }) {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`mobile-nav-item ${location.pathname.startsWith(item.path) ? 'active' : ''}`}
+                className={`mobile-nav-item ${item.accent ? 'nav-item--accent' : ''} ${navActive(item.path, location.pathname) ? 'active' : ''}`}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <item.icon size={18} />

@@ -56,24 +56,22 @@ function KpiCard({ icon: Icon, label, value, sub, color, trend }) {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [period, setPeriod]         = useState('day');
-  const [selectedDate, setSelectedDate]     = useState(new Date().toISOString().split('T')[0]);
-  const [selectedMonth, setSelectedMonth]   = useState(new Date().toISOString().slice(0, 7));
-  const [dailyReport,   setDailyReport]     = useState(null);
-  const [monthlyReport, setMonthlyReport]   = useState(null);
-  const [orders,        setOrders]          = useState([]);
-  const [loading,       setLoading]         = useState(true);
+  const [period, setPeriod]               = useState('day');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [summary,       setSummary]       = useState(null);
+  const [monthlyReport, setMonthlyReport] = useState(null);
+  const [orders,        setOrders]        = useState([]);
+  const [loading,       setLoading]       = useState(true);
 
+  // График (по дням месяца) + список последних заказов
   useEffect(() => {
     async function load() {
       setLoading(true);
       try {
-        const [daily, monthly, ordersData] = await Promise.all([
-          api.reports.daily(selectedDate),
+        const [monthly, ordersData] = await Promise.all([
           api.reports.monthly(selectedMonth),
           api.adminOrders.list(),
         ]);
-        setDailyReport(daily);
         setMonthlyReport(monthly);
         setOrders(ordersData.orders ?? []);
       } catch (err) {
@@ -83,13 +81,20 @@ export default function AdminDashboard() {
       }
     }
     load();
-  }, [selectedDate, selectedMonth]);
+  }, [selectedMonth]);
 
-  const report     = period === 'day' ? dailyReport : monthlyReport;
-  const revenue    = report?.totalRevenue ?? 0;
-  const orderCount = report?.count ?? 0;
-  const avgCheck   = orderCount > 0 ? Math.round(revenue / orderCount) : 0;
+  // KPI: единый admin-only эндпоинт аналитики (День | Неделя | Месяц)
+  useEffect(() => {
+    api.analytics.summary(period)
+      .then(setSummary)
+      .catch((err) => { console.error('Analytics error:', err); setSummary(null); });
+  }, [period]);
+
+  const revenue    = summary?.revenue ?? 0;
+  const orderCount = summary?.orderCount ?? 0;
+  const avgCheck   = summary?.avgCheck ?? 0;
   const inProgress = orders.filter(o => o.status === 'progress').length;
+  const periodLabel = period === 'day' ? 'сегодня' : period === 'week' ? 'за неделю' : 'за месяц';
 
   const chartData = useMemo(() => {
     if (!monthlyReport?.orders?.length) return [];
@@ -127,41 +132,30 @@ export default function AdminDashboard() {
 
         <div className="dash-controls">
           <div className="period-toggle">
-            <button
-              className={`period-btn ${period === 'day' ? 'active' : ''}`}
-              onClick={() => setPeriod('day')}
-            >
-              <CalendarDays size={14} /> День
+            <button className={`period-btn ${period === 'day' ? 'active' : ''}`} onClick={() => setPeriod('day')}>
+              День
             </button>
-            <button
-              className={`period-btn ${period === 'month' ? 'active' : ''}`}
-              onClick={() => setPeriod('month')}
-            >
-              <Calendar size={14} /> Месяц
+            <button className={`period-btn ${period === 'week' ? 'active' : ''}`} onClick={() => setPeriod('week')}>
+              Неделя
+            </button>
+            <button className={`period-btn ${period === 'month' ? 'active' : ''}`} onClick={() => setPeriod('month')}>
+              Месяц
             </button>
           </div>
 
-          {period === 'day' ? (
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={e => setSelectedDate(e.target.value)}
-              className="dash-date-input"
-            />
-          ) : (
-            <input
-              type="month"
-              value={selectedMonth}
-              onChange={e => setSelectedMonth(e.target.value)}
-              className="dash-date-input"
-            />
-          )}
+          <input
+            type="month"
+            value={selectedMonth}
+            onChange={e => setSelectedMonth(e.target.value)}
+            className="dash-date-input"
+            title="Месяц для графика"
+          />
         </div>
       </div>
 
       {/* ── KPI Cards ── */}
       <div className="kpi-grid">
-        <KpiCard icon={TrendingUp}  label={period === 'day' ? 'Выручка сегодня' : 'Выручка за месяц'} value={formatPrice(revenue)} sub={`${orderCount} заказов`} color="blue" />
+        <KpiCard icon={TrendingUp}  label={`Выручка ${periodLabel}`} value={formatPrice(revenue)} sub={`${orderCount} заказов`} color="blue" />
         <KpiCard icon={ShoppingBag} label="Заказов в работе" value={inProgress} sub="в производстве" color="amber" />
         <KpiCard icon={CreditCard}  label="Средний чек" value={avgCheck > 0 ? formatPrice(avgCheck) : '—'} sub={orderCount > 0 ? `по ${orderCount} заказам` : 'нет данных'} color="green" />
       </div>
