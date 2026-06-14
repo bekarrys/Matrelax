@@ -145,7 +145,7 @@
 }
 
 .btn-icon:hover {
-  color: #ef4444;
+  color: var(--accent-red);
   background: rgba(239, 68, 68, 0.1);
 }
 
@@ -210,7 +210,7 @@
   background: rgba(245, 158, 11, 0.1);
   border: 1px solid rgba(245, 158, 11, 0.3);
   border-radius: var(--border-radius);
-  color: #fbbf24;
+  color: var(--status-progress);
   font-size: 0.875rem;
   font-weight: 500;
 }
@@ -233,7 +233,7 @@
 }
 
 .total-row.negative {
-  color: #fca5a5;
+  color: var(--accent-red);
 }
 
 .total-row.grand {

@@ -93,7 +93,7 @@
 }
 
 .detail-row.negative span:last-child {
-  color: #fca5a5;
+  color: var(--accent-red);
 }
 
 .detail-row.warning span:last-child {
@@ -141,7 +141,7 @@
 .btn-warning {
   background: rgba(245, 158, 11, 0.15);
   border: 1px solid rgba(245, 158, 11, 0.3);
-  color: #fbbf24;
+  color: var(--status-progress);
   padding: var(--space-3) var(--space-6);
 }
 
@@ -163,7 +163,7 @@
 .btn-danger {
   background: rgba(239, 68, 68, 0.1);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
+  color: var(--accent-red);
   padding: var(--space-3) var(--space-6);
 }
 

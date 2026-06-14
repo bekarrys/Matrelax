@@ -48,7 +48,7 @@
   transition: color 0.3s;
 }
 .exec-sync--pulse {
-  color: #22c55e;
+  color: var(--status-ready);
 }
 .exec-logout {
   background: transparent;
@@ -111,7 +111,7 @@
 }
 .exec-empty-icon {
   font-size: 48px;
-  color: #22c55e;
+  color: var(--status-ready);
   margin-bottom: 12px;
 }
 .exec-empty-sub {
@@ -148,10 +148,10 @@
   padding: 3px 10px;
   border-radius: var(--radius-full);
 }
-.exec-badge--progress { background: rgba(234, 179, 8, 0.15); color: #eab308; }
-.exec-badge--ready    { background: rgba(34, 197, 94, 0.15);  color: #22c55e; }
-.exec-badge--delivery { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
-.exec-badge--delivered{ background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+.exec-badge--progress { background: var(--status-progress-bg); color: var(--status-progress); }
+.exec-badge--ready    { background: var(--status-ready-bg);    color: var(--status-ready); }
+.exec-badge--delivery { background: var(--status-delivery-bg); color: var(--status-delivery); }
+.exec-badge--delivered{ background: var(--status-delivered-bg); color: var(--status-delivered); }
 
 /* Meta */
 .exec-meta {
@@ -165,7 +165,7 @@
   border-bottom: 1px solid var(--border);
 }
 .exec-delivery-tag {
-  color: #3b82f6;
+  color: var(--status-delivery);
 }
 .exec-notes {
   color: var(--text-tertiary);
@@ -195,7 +195,7 @@
   font-size: 10px;
   font-weight: 700;
   background: rgba(234, 179, 8, 0.15);
-  color: #eab308;
+  color: var(--status-progress);
   padding: 1px 6px;
   border-radius: 4px;
 }
@@ -226,8 +226,8 @@
   font-weight: 700;
 }
 .exec-done-btn {
-  background: #22c55e;
-  color: #000;
+  background: var(--status-ready);
+  color: #0B0B0E;
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.05em;
