@@ -1,35 +1,40 @@
 /* Шрифт подключён через <link> в index.html — без блокировки рендера */
 :root {
-  /* ── Core palette ── */
-  --bg: #0a0a0a;
-  --surface: #1a1a1a;
-  --surface-2: #252525;
-  --surface-3: #2e2e2e;
-  --text-primary: #ffffff;
-  --text-secondary: #888888;
-  --text-tertiary: #555555;
-  --accent: #2563eb;
-  --accent-hover: #1d4ed8;
+  /* ── Core palette (Premium Dark) ── */
+  --bg: #0B0B0E;
+  --surface: #141418;
+  --surface-2: #1C1C22;
+  --surface-3: #26262E;
+  --text-primary: #F4F4F5;
+  --text-secondary: #9A9AA2;
+  --text-tertiary: #5C5C66;
+  --accent: #6D6BF6;
+  --accent-hover: #5A57F2;
   --accent-red: #e94560;
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.15);
+  --accent-glow: rgba(109,107,246,0.35);
+  --accent-tint: rgba(109,107,246,0.12);
+  --gold: #D4B483;
+  --gold-tint: rgba(212,180,131,0.12);
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.14);
   --radius: 16px;
   --radius-sm: 10px;
+  --radius-lg: 24px;
   --radius-full: 999px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
 
   /* ── Admin panel design system ── */
-  --bg-primary:   #0a0a0a;
-  --bg-secondary: #111111;
-  --bg-card:      #161616;
-  --bg-card-hover:#1c1c1c;
+  --bg-primary:   #0B0B0E;
+  --bg-secondary: #111114;
+  --bg-card:      #141418;
+  --bg-card-hover:#1C1C22;
   --bg-overlay:   rgba(0, 0, 0, 0.75);
   --border-color: rgba(255, 255, 255, 0.07);
-  --border-color-light: rgba(255, 255, 255, 0.12);
-  --text-muted:   #444444;
-  --primary-light: #60a5fa;
-  --primary-bg:   rgba(37, 99, 235, 0.12);
+  --border-color-light: rgba(255, 255, 255, 0.14);
+  --text-muted:   #5C5C66;
+  --primary-light: #9A98FA;
+  --primary-bg:   rgba(109, 107, 246, 0.14);
 
   /* Status colours */
   --status-progress:    #f59e0b;
@@ -52,8 +57,9 @@
   --border-radius-lg: 20px;
 
   /* Shadows */
-  --shadow-sm: 0 2px 12px rgba(0,0,0,0.4);
-  --shadow-md: 0 4px 24px rgba(0,0,0,0.5);
+  --shadow-sm: 0 2px 12px rgba(0,0,0,0.45);
+  --shadow-md: 0 8px 32px rgba(0,0,0,0.55);
+  --shadow-glow: 0 4px 24px var(--accent-glow);
 
   /* Z-index */
   --z-sticky: 100;
@@ -118,9 +124,9 @@ img {
 
 /* Skeleton loading animation */
 @keyframes skeleton-pulse {
-  0% { background-color: #1e1e1e; }
-  50% { background-color: #2a2a2a; }
-  100% { background-color: #1e1e1e; }
+  0%   { background-color: #16161B; }
+  50%  { background-color: #202027; }
+  100% { background-color: #16161B; }
 }
 
 .skeleton {
