@@ -259,5 +259,5 @@
   flex-shrink: 0;
 }
 .price-btn--added {
-  background: #16a34a;
+  background: var(--status-ready);
 }

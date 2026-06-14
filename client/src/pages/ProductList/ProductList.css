@@ -114,7 +114,7 @@
   color: var(--text-secondary);
   display: inline-flex;
 }
-.pl-icon-btn:hover { background: var(--border-strong); }
+.pl-icon-btn:hover { background: var(--surface-3); }
 .pl-icon-btn--danger:hover { background: rgba(233,69,96,0.18); color: var(--accent-red); }
 
 .empty-state {

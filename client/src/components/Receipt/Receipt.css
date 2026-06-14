@@ -126,7 +126,7 @@
 }
 
 .receipt-totals-row.negative {
-  color: #fca5a5;
+  color: var(--accent-red);
 }
 
 .receipt-totals-row.grand {

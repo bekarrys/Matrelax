@@ -227,7 +227,7 @@
 }
 .exec-done-btn {
   background: var(--status-ready);
-  color: #0B0B0E;
+  color: var(--bg);
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.05em;

@@ -15,6 +15,16 @@
   --accent-tint: rgba(109,107,246,0.12);
   --gold: #D4B483;
   --gold-tint: rgba(212,180,131,0.12);
+
+  /* Alias tokens (referenced by component CSS) */
+  --primary:         var(--accent);
+  --primary-dark:    var(--accent-hover);
+  --accent-dark:     var(--accent-hover);
+  --bg-input:        var(--surface-2);
+  --bg-glass:        rgba(20, 20, 24, 0.72);
+  --shadow-lg:       0 16px 48px rgba(0,0,0,0.6);
+  --transition-slow: 0.4s ease;
+
   --border: rgba(255, 255, 255, 0.07);
   --border-strong: rgba(255, 255, 255, 0.14);
   --radius: 16px;

@@ -104,7 +104,7 @@
 }
 
 .summary-card.highlight-red .summary-value {
-  color: #fca5a5;
+  color: var(--accent-red);
 }
 
 /* Report Sections */
