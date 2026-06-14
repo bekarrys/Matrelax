@@ -29,10 +29,11 @@
   color: var(--text-primary);
   font-weight: 800;
   font-size: 1rem;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-decoration: none;
 }
 .sidebar-logo svg { color: var(--accent); flex-shrink: 0; }
+.sidebar-logo .brand-accent { color: var(--accent); }
 
 .sidebar-toggle {
   background: transparent;
@@ -78,6 +79,7 @@
 .nav-item.active {
   background: var(--primary-bg);
   color: var(--primary-light);
+  box-shadow: inset 3px 0 0 var(--accent);
 }
 .nav-item svg { flex-shrink: 0; }
 
@@ -115,9 +117,10 @@
 }
 .sidebar-user-role {
   font-size: 0.65rem;
-  color: var(--text-muted);
+  color: var(--accent);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  font-weight: 700;
 }
 
 .logout-btn {
@@ -127,7 +130,7 @@
 }
 .logout-btn:hover {
   background: rgba(239, 68, 68, 0.1);
-  color: #fca5a5;
+  color: var(--accent-red);
 }
 
 /* ── Main Content ────────────────────────────────────────────────────────── */
@@ -260,7 +263,7 @@
 }
 .logout-mobile:hover {
   background: rgba(239, 68, 68, 0.1);
-  color: #fca5a5;
+  color: var(--accent-red);
 }
 
 /* ── Animations ──────────────────────────────────────────────────────────── */
