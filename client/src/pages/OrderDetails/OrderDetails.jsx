@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../utils/api';
 import { RoleGuard } from '../../components/guards/RoleGuard';
 import {
-  SALES_POINTS, ORDER_TYPES, CLIENT_CATEGORIES, PAYMENT_TYPES, DELIVERY_TYPES,
+  SALES_POINTS, ORDER_TYPES, CLIENT_CATEGORIES, PAYMENT_TYPES, PAYMENT_METHODS, DELIVERY_TYPES,
   STATUS, STATUS_ORDER, STATUS_LABELS, FIELD_LABELS,
   formatPrice, formatDateTime,
 } from '../../utils/constants';
@@ -314,6 +314,20 @@ export default function OrderDetails() {
               <DetailRow label="Способ" value={DELIVERY_TYPES[order.deliveryType] || '—'} />
             )}
             <DetailRow label="Оплата" value={PAYMENT_TYPES[order.paymentType] || '—'} />
+            {editMode ? (
+              <EditRow label="Способ оплаты">
+                <select
+                  value={form.paymentMethod || 'cash'}
+                  onChange={(e) => updateForm({ paymentMethod: e.target.value })}
+                >
+                  {Object.entries(PAYMENT_METHODS).map(([k, v]) => (
+                    <option key={k} value={k}>{v}</option>
+                  ))}
+                </select>
+              </EditRow>
+            ) : (
+              <DetailRow label="Способ оплаты" value={PAYMENT_METHODS[order.paymentMethod] || '—'} />
+            )}
             <EditRow label="Заметки">
               {editMode
                 ? <textarea rows={2} value={form.notes || ''} onChange={(e) => updateForm({ notes: e.target.value })} />
