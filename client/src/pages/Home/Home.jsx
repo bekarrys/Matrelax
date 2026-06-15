@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { api } from '../../api';
 import ProductCard from '../../components/ProductCard/ProductCard';
 import SeriesDropdown from '../../components/SeriesDropdown/SeriesDropdown';
@@ -14,7 +13,6 @@ const CATEGORIES = [
 ];
 
 export default function Home() {
-  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState('mattresses');
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);

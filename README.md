@@ -1,207 +1,148 @@
-# 🛏️ MATRELAX — Order Management System
+# 🛏️ MATRELAX — Online Mattress Store
 
-> **Made in Kazakhstan** | Mattress Production & Sales Automation
+> **Made in Kazakhstan** | Mattress Production & Sales
 
-Полнофункциональное веб-приложение для управления заказами матрасной компании **MATRELAX**.
-Состоит из публичного интернет-магазина и внутренней панели персонала, работающих на
-общем Express-бэкенде с Firebase Authentication и Cloud Firestore.
+Публичный интернет-магазин матрасной фабрики **MATRELAX**: витрина, корзина,
+оформление и отслеживание заказа. Работает на Express-бэкенде с Cloud Firestore.
+
+> **Важно (декомиссия портала менеджера).** Раньше приложение включало внутреннюю
+> панель персонала (заказы/аналитика/сотрудники/каталог). Она **выведена из
+> эксплуатации**: клиент стал чисто магазином, а серверные маршруты портала —
+> размонтированы. Полный снимок панели сохранён на ветке
+> **`origin/legacy-admin-backup`**, логика портала — в `server/routes/*` и
+> `server/utils/*` (не подключена), на случай переиспользования.
 
 ---
 
 ## Содержание
 
 - [Быстрый старт](#быстрый-старт)
-- [Как работает приложение (в двух частях)](#как-работает-приложение-в-двух-частях)
-- [Роли и авторизация](#роли-и-авторизация)
-- [API (основные эндпоинты)](#api-основные-эндпоинты)
-- [Страницы фронтенда](#страницы-фронтенда)
-- [Каталог и расчёт цен](#каталог-и-расчёт-цен)
+- [Как устроено](#как-устроено)
+- [API (активные эндпоинты)](#api-активные-эндпоинты)
+- [Страницы магазина](#страницы-магазина)
 - [Хранение данных](#хранение-данных)
 - [Архитектура проекта](#архитектура-проекта)
 - [Команды и сценарии](#команды-и-сценарии)
 - [Переменные окружения (.env)](#переменные-окружения-env)
-- [Структура репозитория](#структура-репозитория)
+- [Декоммиссированный портал менеджера](#декоммиссированный-портал-менеджера)
 
 ---
 
 ## Быстрый старт
 
 ### 1) Установка
-
 ```bash
 npm run install:all
 ```
-
-Устанавливает зависимости в корне, в `client/` и в `server/`.
+Ставит зависимости в корне, `client/` и `server/`.
 
 ### 2) Настройка `.env`
-
-В корне проекта создайте файл `.env` с ключами Firebase (см. раздел
-[Переменные окружения](#переменные-окружения-env)). Без них сервер не подключится
-к Firestore, а вход вернёт `503`.
+В корне создайте `.env` с ключами Firebase (см. [Переменные окружения](#переменные-окружения-env)).
+Без них сервер не подключится к Firestore.
 
 ### 3) Запуск (клиент + сервер)
-
 ```bash
 npm run dev
 ```
-
-Фронтенд и бэкенд стартуют параллельно.
-
-- **Клиент:** http://localhost:3000
+- **Клиент (Vite dev):** http://localhost:5173
 - **API:** http://localhost:3001/api
 
 ### Прод-сборка
-
 ```bash
-npm run build         # собирает client/dist
-npm run dev:server    # сервер раздаёт client/dist + SPA-fallback
+npm run build       # собирает client/dist
+npm run dev:server  # сервер раздаёт client/dist + SPA-fallback на :3001
 ```
-
-В продакшене сервер сам отдаёт собранный фронтенд из `client/dist`: статика
-плюс SPA-fallback (любой не-`/api` GET-запрос возвращает `index.html`).
-
-### UI (DrinKit-style)
-Обновления интерфейса витрины в стиле DrinKit:
-- корзина: фиксированный bottom bar + выбор оплаты
-- карточка товара: открытие как bottom sheet
-- общий стиль: таблетки (999px), caps убран, активные элементы с белой рамкой,
-  анимация bottom sheet `slide up 300ms ease`
+В продакшене сам сервер отдаёт собранный фронт из `client/dist` (статика +
+SPA-fallback: любой не-`/api` GET → `index.html`).
 
 ---
 
-## Как работает приложение (в двух частях)
+## Как устроено
 
-### Клиент (`client/`)
-- React 18 + Vite, React Router v6
+### Клиент (`client/`) — только магазин
+- React 18 + Vite (JavaScript/JSX), React Router v6
 - Zustand для корзины (persist в `localStorage`)
-- Tailwind CSS, lucide-react, recharts
-- хранение токена Firebase в `localStorage`
-- **публичная витрина:** главная, карточка товара, корзина, оформление, статус заказа
-- **панель персонала:** заказы, создание заказа, детали, сотрудники, отчёты, настройки
+- Tailwind (utilities) + кастомная CSS-дизайн-система (тёмная тема, токены в
+  `styles/globals.css`), lucide-react
+- Авторизация и панель **не используются** — приложение публичное.
 
 ### Сервер (`server/`)
-- Express.js (порт 3001)
-- Firebase Admin SDK — Firestore + проверка ID-токенов
-- защита маршрутов через middleware `verifyToken` + `requireRole`
+- Express.js (порт **3001**), точка входа `index.js` (поднимает `app.js`,
+  освобождает занятый порт)
+- Firebase Admin SDK → Cloud Firestore
+- Монтируются только магазинные маршруты: `products`, `orders`, `payment`.
 
 ---
 
-## Роли и авторизация
-
-Аутентификация персонала построена на **Firebase Authentication** (email/password).
-Сервер логинит пользователя через Firebase REST (`signInWithPassword`) и возвращает
-ID-токен; роль хранится в **Custom Claims** токена (`role`).
-
-| Роль | Доступ |
-|------|--------|
-| `admin` | Полный доступ: заказы, сотрудники, отчёты, каталог, пользователи |
-| `manager` | Заказы, сотрудники, отчёты, каталог |
-| `executor` | Цех: видит заказы в работе, переводит `progress → ready` (вход по PIN) |
-| Публичный | Витрина, корзина, оформление, статус заказа |
-
-**Механика:**
-- Клиент отправляет `POST /api/auth/login` с `{ email, password }`.
-- Сервер возвращает `{ token, refreshToken, email, displayName, role }`.
-- Токен передаётся заголовком `Authorization: Bearer <token>`.
-- Защищённые маршруты проверяют токен (`verifyToken`) и роль (`requireRole`).
-- Исполнитель цеха использует PIN-заголовок `x-workshop-pin` (env `WORKSHOP_PIN`,
-  по умолчанию `1234`) — отдельный аккаунт Firebase не нужен.
-
----
-
-## API (основные эндпоинты)
+## API (активные эндпоинты)
 
 ### Публичные
+- `GET /api/products?activeOnly=1[&category=...]` — каталог активных товаров (`products`)
+- `GET /api/products/:id` — карточка товара
+- `POST /api/orders` — создание заказа магазина (`shopOrders`)
+- `GET /api/orders/:id/public` — публичный статус заказа
+- `POST /api/payment/initiate`, `GET /api/payment/status/:orderId` — оплата (Kaspi / Freedom)
 
-- `POST /api/auth/login` — body `{ email, password }` → `{ token, refreshToken, email, displayName, role }`
-- `GET /api/auth/verify` — проверка токена → `{ valid, email, role, uid }`
-- `GET /api/products` — публичный каталог товаров (Firestore `products`)
-- `POST /api/payment` — вебхуки оплаты (Kaspi / Freedom)
-
-### PIN-защищённые (цех)
-
-- `GET /api/orders` — заказы магазина для цеха (заголовок `x-workshop-pin`)
-- `PATCH /api/orders/:id` — смена статуса заказа
-
-### Firebase-защищённые (ID-токен + роль)
-
-- `GET/POST/PUT/DELETE /api/admin-orders` — заказы персонала (Firestore `adminOrders`)
-- `GET/POST /api/employees`, `POST /api/employees/:id/advance`, `POST /api/employees/:id/worklog`
-- `GET /api/reports/daily/:date?`, `GET /api/reports/monthly/:month?`
-- `GET /api/catalog`, `POST /api/catalog/calculate`
-- `GET /api/auth/users` — список пользователей (только `admin`)
+### Цех (PIN)
+- `GET /api/orders` / `PATCH /api/orders/:id/status` — заголовок `x-workshop-pin`
+  (env `WORKSHOP_PIN`, по умолчанию `1234`)
 
 ### Сервисные
-
 - `GET /api/health` → `{ status: 'ok', timestamp, db: 'firestore' }`
+
+> Маршруты `admin-orders`, `analytics`, `auth`, `employees`, `reports`, `catalog`
+> **размонтированы** (см. [декоммиссия](#декоммиссированный-портал-менеджера)).
 
 ---
 
-## Страницы фронтенда
+## Страницы магазина
 
-| Страница | Описание |
+| Путь | Описание |
 |---|---|
 | `/` | Витрина: каталог матрасов и подушек |
 | `/product/:id` | Карточка товара (bottom sheet) |
-| `/cart`, `/checkout` | Корзина и оформление заказа |
-| `/order-status/:id` | Статус заказа для покупателя |
-| `/login` | Авторизация персонала (Firebase) |
-| `/orders` | Доска заказов: **В работе → Готов → Доставка → Доставлен** |
-| `/orders/new` | Мастер создания заказа |
-| `/orders/:id` | Детали заказа, редактирование, квитанция |
-| `/employees` | Сотрудники, авансы, производительность |
-| `/reports` | Суточные и месячные отчёты |
-| `/settings` | Каталог цен и настройки |
+| `/checkout` | Оформление заказа |
+| `/order/:id` | Статус заказа для покупателя |
 
-Страницы панели персонала защищены ролью; витрина доступна без авторизации.
-
----
-
-## Каталог и расчёт цен
-
-Цены берутся из `server/data/catalog/prices.json`.
-
-### Логика
-
-- Для выбранной модели цена берётся по размеру (`sizes`: 70–200 см).
-- При опции **extra10cm** добавляется наценка серии: `catalog.series[model.series].surcharge10cm`.
-- Эндпоинт `POST /api/catalog/calculate` принимает `{ modelId, size, extra10cm }`
-  и возвращает `{ basePrice, surcharge, totalPrice, series }`.
-
-### Сущности
-
-- **Серии:** `Royal`, `LUX`, `Elite`, `Premium`, `Ortoped`, `Polu-Orto`, `Euro`, `Toppers`, `Pillows`
-- **Модели:** например `R1`, `L1`, `E1`, `701`, `400`, `500`, `504`, `700`, `Pillow1` и т.д.
+Корзина — глобальный bottom-sheet (`CartSheet`), состояние в Zustand.
+Любой другой путь редиректит на `/`.
 
 ---
 
 ## Хранение данных
 
-Основное хранилище — **Cloud Firestore** (через Firebase Admin SDK).
-
-Коллекции:
-- `adminOrders` — заказы персонала
+Основное хранилище — **Cloud Firestore** (Firebase Admin SDK). Коллекции,
+используемые магазином:
+- `products` — каталог товаров
 - `shopOrders` — заказы витрины
-- `products` — публичный каталог товаров
-- `employees` — сотрудники, авансы, worklog
-- `users` — пользователи и роли
 
-Локальные JSON-файлы (`server/data/`) используются для каталога цен и как
-legacy-данные:
-- `server/data/catalog/prices.json` — прайс матрасов
-- `server/data/staff/employees.json`, `server/data/orders/registry.json` — legacy
+Локальные данные: `server/data/catalog/prices.json` — прайс (используется
+сохранённой логикой расчёта цены каталога, сейчас не смонтирована).
+
+> Коллекция `adminOrders` (заказы портала) и связанные данные сохраняются, но
+> клиентом не используются.
 
 ---
 
 ## Архитектура проекта
 
 ```
-client/          → Vite + React 18 + React Router + Zustand + Tailwind
-server/          → Express.js + Firebase Admin (Firestore + Auth)
-server/routes/   → auth, products, payment, orders, adminOrders, employees, reports, catalog
-server/data/     → каталог цен (prices.json) + legacy JSON
-docs/            → спеки и планы (design specs / implementation plans)
+client/src/
+  App.jsx              → роутинг магазина (storefront-only)
+  api/index.js         → клиент API магазина (products, orders, payment)
+  store/cartStore.js   → Zustand-корзина
+  pages/               → Home, ProductDetail, Checkout, OrderStatus
+  components/          → CartSheet, BottomSheet, ProductCard, SeriesDropdown
+  styles/globals.css   → дизайн-токены (тёмная тема)
+
+server/
+  index.js             → запуск (порт + освобождение порта)
+  app.js               → Express, Firebase, монтаж магазинных маршрутов, раздача client/dist
+  routes/              → products, orders, payment (активны) + портал (дормант)
+  middleware/auth.js   → verifyToken / requireRole (для мутаций products)
+  utils/firebase.js    → инициализация Admin SDK
+  data/catalog/        → prices.json
+  test/                → node:test для сохранённой логики портала (45 тестов)
 ```
 
 ---
@@ -210,13 +151,12 @@ docs/            → спеки и планы (design specs / implementation pla
 
 | Команда | Описание |
 |---|---|
-| `npm run dev` | Запуск клиента и сервера параллельно |
-| `npm run dev:client` | Только клиент (порт 3000) |
-| `npm run dev:server` | Только сервер (порт 3001, раздаёт `client/dist` в прод) |
+| `npm run dev` | Клиент (Vite) + сервер параллельно |
+| `npm run dev:client` | Только клиент |
+| `npm run dev:server` | Только сервер (`:3001`, раздаёт `client/dist`) |
 | `npm run build` | Сборка клиента (`client/dist`) |
-| `npm run build:client` | Алиас сборки клиента |
-| `npm run deploy` | lint + сборка + `firebase deploy` (hosting, firestore, functions) |
 | `npm run install:all` | Установка зависимостей в root/client/server |
+| `npm test` *(в `server/`)* | Тесты сохранённой логики (`node:test`) |
 
 ---
 
@@ -224,9 +164,8 @@ docs/            → спеки и планы (design specs / implementation pla
 
 Сервер (Firebase Admin):
 - `FIREBASE_PROJECT_ID` — ID проекта Firebase
-- `FIREBASE_SERVICE_ACCOUNT_BASE` *(или `GOOGLE_APPLICATION_CREDENTIALS`)* — сервисный аккаунт
-- `FIREBASE_WEB_API_KEY` — Web API Key для входа через Firebase REST
-- `WORKSHOP_PIN` — PIN исполнителя цеха (по умолчанию `1234`)
+- `FIREBASE_SERVICE_ACCOUNT_BASE64` *(или `GOOGLE_APPLICATION_CREDENTIALS` — путь к JSON)* — сервисный аккаунт
+- `WORKSHOP_PIN` — PIN цеха (по умолчанию `1234`)
 - `PORT` — порт сервера (по умолчанию `3001`)
 
 Клиент (Vite):
@@ -234,15 +173,19 @@ docs/            → спеки и планы (design specs / implementation pla
 
 ---
 
-## Структура репозитория
+## Декоммиссированный портал менеджера
 
-- `.gitignore`
-- `package.json` (root) — orchestrator команд
-- `client/` — React-приложение (витрина + панель)
-- `server/` — Express API + Firebase Admin
-- `server/data/` — каталог цен и legacy JSON
-- `docs/` — спеки и планы
+Внутренняя панель (заказы-CRM, аналитика, сотрудники, отчёты, каталог) выведена
+из эксплуатации, чтобы клиентское приложение было **только магазином**:
+
+- **Клиент:** страницы и инфраструктура панели удалены из роутинга (магазин на `/`).
+- **Сервер:** маршруты `admin-orders`, `analytics`, `auth`, `employees`, `reports`,
+  `catalog` не монтируются в `app.js`. Их обработчики и чистая логика
+  (`utils/orderLogic.js`, `utils/analytics.js`) **сохранены** и покрыты тестами
+  (`server/test/`, `npm test`) — для переиспользования в будущем объединённом портале.
+- **Полный снимок** портала до удаления — ветка **`origin/legacy-admin-backup`**
+  (откат: `git checkout legacy-admin-backup`).
 
 ---
 
-*🛏️ MATRELAX — Sleep better, work smarter.*
+*🛏️ MATRELAX — Sleep better.*
