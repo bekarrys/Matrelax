@@ -15,8 +15,10 @@ app.use('/api/auth',         require('./routes/auth'));
 app.use('/api/products',     require('./routes/products'));
 app.use('/api/payment',      require('./routes/payment'));
 app.use('/api/orders',       require('./routes/orders'));
-app.use('/api/admin-orders', require('./routes/adminOrders'));
-app.use('/api/analytics',    require('./routes/analytics'));
+// Менеджерский портал выведен из эксплуатации (декомиссия):
+// маршруты /api/admin-orders и /api/analytics не монтируются. Их логика
+// сохранена в routes/adminOrders.js, routes/analytics.js и utils/* для
+// переиспользования в будущем объединённом портале (покрыта тестами).
 app.use('/api/employees',    verifyToken, requireRole('admin', 'manager'), require('./routes/employees'));
 app.use('/api/reports',      verifyToken, requireRole('admin', 'manager'), require('./routes/reports'));
 app.use('/api/catalog',      verifyToken, requireRole('admin', 'manager'), require('./routes/catalog'));
