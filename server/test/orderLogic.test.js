@@ -128,3 +128,18 @@ test('computeFieldDiffs: does not track item array (handled separately)', () => 
   );
   assert.deepEqual(diffs, []);
 });
+
+test('computeFieldDiffs: tracks paymentMethod change', () => {
+  const diffs = computeFieldDiffs({ paymentMethod: 'cash' }, { paymentMethod: 'card' });
+  assert.deepEqual(diffs, [{ field: 'paymentMethod', from: 'cash', to: 'card' }]);
+});
+
+test('computeFieldDiffs: tracks paymentType change', () => {
+  const diffs = computeFieldDiffs({ paymentType: 'debt' }, { paymentType: 'paid' });
+  assert.deepEqual(diffs, [{ field: 'paymentType', from: 'debt', to: 'paid' }]);
+});
+
+test('computeFieldDiffs: missing old paymentMethod reported as null', () => {
+  const diffs = computeFieldDiffs({}, { paymentMethod: 'kaspi' });
+  assert.deepEqual(diffs, [{ field: 'paymentMethod', from: null, to: 'kaspi' }]);
+});

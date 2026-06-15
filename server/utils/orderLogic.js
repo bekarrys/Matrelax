@@ -57,6 +57,8 @@ const TRACKED_FIELDS = [
   'customerName',
   'customerPhone',
   'notes',
+  'paymentMethod',
+  'paymentType',
   'salesPoint',
   'deliveryType',
   'deliveryAddress',
