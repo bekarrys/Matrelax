@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../utils/api';
 import {
-  SALES_POINTS, ORDER_TYPES, CLIENT_CATEGORIES, PAYMENT_TYPES, DELIVERY_TYPES,
+  SALES_POINTS, ORDER_TYPES, CLIENT_CATEGORIES, PAYMENT_TYPES, PAYMENT_METHODS, DELIVERY_TYPES,
   STATUS, STATUS_LABELS, formatPrice
 } from '../../utils/constants';
 import PhoneInput from '../../components/PhoneInput/PhoneInput';
@@ -42,6 +42,7 @@ export default function CreateOrder() {
     deliveryFee: 0,
     discount: 0,
     paymentType: 'paid',
+    paymentMethod: 'cash',
     paidAmount: 0,
     deliveryType: 'pickup',
     status: STATUS.NEW,
@@ -348,6 +349,18 @@ export default function CreateOrder() {
                   key={key}
                   className={`btn-option ${form.paymentType === key ? 'selected' : ''}`}
                   onClick={() => updateForm({ paymentType: key })}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <p className="step-desc" style={{ marginTop: 16 }}>Способ оплаты</p>
+            <div className="point-buttons">
+              {Object.entries(PAYMENT_METHODS).map(([key, label]) => (
+                <button
+                  key={key}
+                  className={`btn-option ${form.paymentMethod === key ? 'selected' : ''}`}
+                  onClick={() => updateForm({ paymentMethod: key })}
                 >
                   {label}
                 </button>
