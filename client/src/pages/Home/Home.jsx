@@ -47,13 +47,19 @@ export default function Home() {
       {/* Sticky header + tabs block */}
       <div className="home-sticky-top">
         <div className="home-header">
-          <div className="home-logo">
+          <button
+            type="button"
+            className="home-logo"
+            onClick={() => navigate('/orders')}
+            title="Открыть заказы"
+            aria-label="Открыть список заказов"
+          >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
               <rect x="2" y="9" width="20" height="10" rx="2" stroke="white" strokeWidth="1.5" fill="none"/>
               <rect x="4" y="7" width="16" height="4" rx="1" stroke="white" strokeWidth="1.5" fill="none"/>
             </svg>
             <span>matrelax</span>
-          </div>
+          </button>
           <div className="home-cart-btn" onClick={openCart}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
               <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" stroke="white" strokeWidth="1.5" fill="none"/>
