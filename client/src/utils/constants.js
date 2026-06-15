@@ -46,6 +46,7 @@ export const FIELD_LABELS = {
   discount: 'Скидка',
   totalAmount: 'Сумма',
   paidAmount: 'Оплачено',
+  paymentMethod: 'Способ оплаты',
   balance: 'Остаток',
   items: 'Позиции',
   status: 'Статус',
@@ -69,6 +70,13 @@ export const PAYMENT_TYPES = {
   paid: 'Оплачен',
   debt: 'Долг',
   advance: 'Аванс',
+};
+
+export const PAYMENT_METHODS = {
+  cash:  'Наличные',
+  card:  'Карта (терминал)',
+  kaspi: 'Kaspi QR / перевод',
+  other: 'Другой банк / прочее',
 };
 
 export const DELIVERY_TYPES = {
