@@ -1,0 +1,162 @@
+/* Orders — utility-first data grid (enterprise/admin) */
+
+.orders-page { display: flex; flex-direction: column; gap: 16px; }
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.page-header h1 { font-size: 1.4rem; font-weight: 700; color: var(--text-primary); }
+.page-subtitle { color: var(--text-secondary); font-size: 0.85rem; margin-top: 2px; }
+
+/* Stats */
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.stat-card {
+  display: flex; flex-direction: column; gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+.stat-label { font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+.stat-value { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); }
+.stat-value.accent { color: var(--accent); }
+.stat-value.warning { color: var(--status-progress); }
+
+/* Controls row */
+.orders-controls {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+.orders-search {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 10px;
+  flex: 1; min-width: 240px;
+  color: var(--text-tertiary);
+}
+.orders-search input {
+  flex: 1; background: transparent; border: none;
+  padding: 9px 0; color: var(--text-primary); font-size: 0.875rem;
+}
+.orders-search-clear {
+  background: transparent; color: var(--text-tertiary);
+  display: flex; align-items: center; padding: 2px;
+}
+.orders-search-clear:hover { color: var(--text-primary); }
+
+.orders-controls-right { display: flex; align-items: center; gap: 8px; }
+.orders-controls-right select,
+.orders-controls-right input[type="date"] {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 8px 10px;
+  font-size: 0.85rem;
+}
+.btn-text {
+  background: transparent; color: var(--accent);
+  font-size: 0.85rem; font-weight: 600; padding: 8px 6px;
+}
+
+/* Status chips */
+.status-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.status-chip {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  font-size: 0.82rem; font-weight: 600;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+.status-chip:hover { color: var(--text-primary); }
+.status-chip.active {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-tint);
+}
+
+.orders-error {
+  background: rgba(233, 69, 96, 0.12);
+  border: 1px solid rgba(233, 69, 96, 0.3);
+  color: var(--accent-red);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+
+/* Table */
+.orders-table-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow-x: auto;
+  background: var(--surface);
+}
+.orders-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.orders-table thead th {
+  text-align: left;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-strong);
+  white-space: nowrap;
+  background: var(--surface-2);
+}
+.orders-table th.num, .orders-table td.num { text-align: right; }
+.orders-table tbody td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+.orders-row { cursor: pointer; transition: background var(--transition-fast); }
+.orders-row:hover { background: var(--surface-2); }
+.orders-table tbody tr:last-child td { border-bottom: none; }
+.mono { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; color: var(--text-secondary); }
+.orders-table td.num { font-variant-numeric: tabular-nums; font-weight: 600; }
+.chevron { color: var(--text-tertiary); text-align: center; font-size: 1.1rem; }
+
+.type-tag {
+  display: inline-block;
+  background: var(--surface-3);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* Payment badge */
+.pay-badge {
+  display: inline-block;
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.pay-paid    { color: var(--status-ready);    background: var(--status-ready-bg); }
+.pay-advance { color: var(--status-progress); background: var(--status-progress-bg); }
+.pay-debt    { color: var(--accent-red);      background: rgba(233, 69, 96, 0.12); }
+
+/* Empty / skeleton */
+.orders-empty { text-align: center; color: var(--text-secondary); padding: 32px 0; }
+.skeleton-row td { padding: 11px 14px; border-bottom: 1px solid var(--border); }
+.skeleton-cell {
+  display: block; height: 14px; width: 80%;
+  border-radius: 4px;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@media (max-width: 768px) {
+  .stats-row { grid-template-columns: 1fr; }
+  .orders-controls-right { width: 100%; justify-content: space-between; }
+}

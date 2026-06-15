@@ -1,0 +1,223 @@
+/* PIN screen */
+.ws-pin-page {
+  min-height: 100dvh;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.ws-pin-card {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.ws-pin-logo {
+  font-size: 48px;
+}
+.ws-pin-title {
+  font-size: 22px;
+  font-weight: 700;
+}
+.ws-pin-sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: -12px;
+}
+.ws-pin-dots {
+  display: flex;
+  gap: 14px;
+}
+.ws-pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--surface-3);
+  background: transparent;
+  transition: all 0.15s;
+}
+.ws-pin-dot--filled {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+}
+.ws-pin-dot--error {
+  background: var(--accent-red);
+  border-color: var(--accent-red);
+}
+
+/* Keypad */
+.ws-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 72px);
+  gap: 12px;
+  margin-top: 4px;
+}
+.ws-key {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 22px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+  transition: transform 0.1s, background 0.1s;
+}
+.ws-key:active { transform: scale(0.92); background: var(--surface-2); }
+.ws-key--empty { background: transparent; pointer-events: none; }
+
+/* Workshop page */
+.ws-page {
+  min-height: 100dvh;
+  background: var(--bg);
+}
+.ws-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(16px + var(--safe-top)) 20px 16px;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 10;
+}
+.ws-header h1 { font-size: 20px; font-weight: 700; }
+.ws-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.ws-loading-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  animation: blink 1s ease infinite;
+}
+.ws-logout {
+  background: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  touch-action: manipulation;
+}
+
+.ws-orders {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ws-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+.ws-empty p { font-size: 16px; }
+.ws-empty-sub { font-size: 13px; margin-top: 8px; color: var(--text-tertiary); }
+
+/* Order card */
+.ws-order-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.ws-order-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.ws-order-number {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* Status badges */
+.ws-status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: lowercase;
+}
+.ws-status-paid { background: var(--status-delivery-bg); color: var(--status-delivery); }
+.ws-status-in_production { background: var(--status-progress-bg); color: var(--status-progress); }
+.ws-status-ready { background: var(--status-ready-bg); color: var(--status-ready); }
+
+.ws-order-info {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.ws-info-row {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+.ws-info-row span:first-child { color: var(--text-tertiary); min-width: 70px; }
+.ws-info-row span:last-child { color: var(--text-primary); }
+
+.ws-order-items {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ws-item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.ws-item-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+.ws-item-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex: 1;
+}
+.ws-item-qty {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.ws-order-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+}
+.ws-order-total {
+  font-size: 15px;
+  font-weight: 700;
+}
+.ws-action-btn {
+  background: var(--accent);
+  color: white;
+  border-radius: var(--radius-full);
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  touch-action: manipulation;
+  transition: transform 0.1s;
+}
+.ws-action-btn:active { transform: scale(0.96); }

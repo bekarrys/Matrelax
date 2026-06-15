@@ -1,0 +1,257 @@
+.exec-page {
+  min-height: 100dvh;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  padding-bottom: calc(20px + var(--safe-bottom));
+}
+
+/* Header */
+.exec-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  padding-top: calc(12px + var(--safe-top));
+}
+.exec-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.exec-logo {
+  font-size: 24px;
+}
+.exec-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.exec-sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 1px;
+}
+.exec-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.exec-sync {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  transition: color 0.3s;
+}
+.exec-sync--pulse {
+  color: var(--status-ready);
+}
+.exec-logout {
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+/* Counter */
+.exec-counter {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 16px 16px 8px;
+}
+.exec-counter-num {
+  font-size: 36px;
+  font-weight: 800;
+  line-height: 1;
+}
+.exec-counter-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* List */
+.exec-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 8px 16px;
+}
+
+/* Loading */
+.exec-loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+.exec-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--surface-3);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: exec-spin 0.7s linear infinite;
+}
+@keyframes exec-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty */
+.exec-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+.exec-empty-icon {
+  font-size: 48px;
+  color: var(--status-ready);
+  margin-bottom: 12px;
+}
+.exec-empty-sub {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-top: 6px;
+}
+
+/* Card */
+.exec-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.exec-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.exec-order-num {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Status badge */
+.exec-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+}
+.exec-badge--progress { background: var(--status-progress-bg); color: var(--status-progress); }
+.exec-badge--ready    { background: var(--status-ready-bg);    color: var(--status-ready); }
+.exec-badge--delivery { background: var(--status-delivery-bg); color: var(--status-delivery); }
+.exec-badge--delivered{ background: var(--status-delivered-bg); color: var(--status-delivered); }
+
+/* Meta */
+.exec-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+}
+.exec-delivery-tag {
+  color: var(--status-delivery);
+}
+.exec-notes {
+  color: var(--text-tertiary);
+}
+
+/* Items */
+.exec-items {
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.exec-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.exec-item-name {
+  font-size: 15px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.exec-tag {
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(234, 179, 8, 0.15);
+  color: var(--status-progress);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+.exec-item-detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.exec-qty {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Footer */
+.exec-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.exec-total {
+  font-size: 16px;
+  font-weight: 700;
+}
+.exec-done-btn {
+  background: var(--status-ready);
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  min-width: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.exec-done-btn:active {
+  opacity: 0.8;
+  transform: scale(0.97);
+}
+.exec-done-btn:disabled {
+  opacity: 0.5;
+}
+.exec-btn-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0,0,0,0.3);
+  border-top-color: #000;
+  border-radius: 50%;
+  animation: exec-spin 0.7s linear infinite;
+}

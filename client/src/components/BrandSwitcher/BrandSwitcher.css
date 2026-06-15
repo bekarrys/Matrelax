@@ -1,0 +1,53 @@
+/* BrandSwitcher — логотип-переключатель контекста (тёмные токены проекта) */
+
+.brand-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text-primary);
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+.brand-switcher:hover { opacity: 0.85; }
+.brand-switcher:active { transform: scale(0.97); }
+
+.brand-switcher__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+  animation: bs-icon-pop 0.3s ease;
+}
+
+/* Иконка «появляется» при смене контекста (как в исходном компоненте) */
+@keyframes bs-icon-pop {
+  from { transform: scale(0.4) rotate(-90deg); opacity: 0; }
+  to   { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+.brand-switcher__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.15;
+}
+.brand-switcher__name {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.brand-switcher__sub {
+  font-size: 11px;
+  color: var(--text-secondary);
+}
