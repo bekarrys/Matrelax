@@ -60,6 +60,15 @@ function ExecutorRoute({ children }) {
   return children;
 }
 
+// Корень приложения → рабочая панель (CRM — главный экран).
+// Вошёл: executor → /executor, остальные → /orders. Не вошёл → /login.
+function RootRedirect() {
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  if (!user) return <Navigate to="/login" replace />;
+  return <Navigate to={user.role === 'executor' ? '/executor' : '/orders'} replace />;
+}
+
 // Страница логина — перенаправляет если уже вошёл
 function LoginRoute() {
   const { user, loading } = useAuth();
@@ -77,12 +86,15 @@ export default function App() {
     <>
       <CartSheet />
       <Routes>
-        {/* ── Публичный магазин ── */}
-        <Route path="/" element={<Home />} />
+        {/* ── Корень → рабочая панель (CRM как главный экран) ── */}
+        <Route path="/" element={<RootRedirect />} />
+
+        {/* ── Публичный магазин (доступен по /shop) ── */}
+        <Route path="/shop" element={<Home />} />
         <Route path="/product/:id" element={<ProductDetail />} />
-        <Route path="/cart" element={<Navigate to="/" replace />} />
+        <Route path="/cart" element={<Navigate to="/shop" replace />} />
         <Route path="/checkout" element={<Checkout />} />
-      <Route path="/order/:id" element={<OrderStatus />} />
+        <Route path="/order/:id" element={<OrderStatus />} />
 
       {/* ── Авторизация ── */}
       <Route path="/login" element={<LoginRoute />} />
