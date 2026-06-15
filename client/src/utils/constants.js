@@ -47,6 +47,7 @@ export const FIELD_LABELS = {
   totalAmount: 'Сумма',
   paidAmount: 'Оплачено',
   paymentMethod: 'Способ оплаты',
+  paymentType: 'Тип оплаты',
   balance: 'Остаток',
   items: 'Позиции',
   status: 'Статус',

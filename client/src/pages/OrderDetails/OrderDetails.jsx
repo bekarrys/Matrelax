@@ -326,7 +326,7 @@ export default function OrderDetails() {
                 </select>
               </EditRow>
             ) : (
-              <DetailRow label="Способ оплаты" value={PAYMENT_METHODS[order.paymentMethod] || '—'} />
+              <DetailRow label="Способ оплаты" value={PAYMENT_METHODS[order.paymentMethod] || order.paymentMethod || '—'} />
             )}
             <EditRow label="Заметки">
               {editMode
