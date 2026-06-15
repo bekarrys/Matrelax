@@ -313,7 +313,20 @@ export default function OrderDetails() {
             ) : (
               <DetailRow label="Способ" value={DELIVERY_TYPES[order.deliveryType] || '—'} />
             )}
-            <DetailRow label="Оплата" value={PAYMENT_TYPES[order.paymentType] || '—'} />
+            {editMode ? (
+              <EditRow label="Оплата">
+                <select
+                  value={form.paymentType || 'paid'}
+                  onChange={(e) => updateForm({ paymentType: e.target.value })}
+                >
+                  {Object.entries(PAYMENT_TYPES).map(([k, v]) => (
+                    <option key={k} value={k}>{v}</option>
+                  ))}
+                </select>
+              </EditRow>
+            ) : (
+              <DetailRow label="Оплата" value={PAYMENT_TYPES[order.paymentType] || '—'} />
+            )}
             {editMode ? (
               <EditRow label="Способ оплаты">
                 <select
