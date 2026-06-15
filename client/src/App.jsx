@@ -42,12 +42,17 @@ function PrivateRoute({ children }) {
   return children;
 }
 
-// Admin + Manager → Layout с сайдбаром
+// Admin + Manager → Layout с сайдбаром.
+// Только эти две роли получают доступ к панели (правка/разблокировка заказов).
 function StaffRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return <LoadingScreen />;
   if (!user) return <Navigate to="/login" replace />;
   if (user.role === 'executor') return <Navigate to="/executor" replace />;
+  if (user.role !== 'admin' && user.role !== 'manager') {
+    // Обычный пользователь (role 'client' и пр.) не имеет доступа к рабочему месту
+    return <Navigate to="/login" replace />;
+  }
   return <Layout>{children}</Layout>;
 }
 
