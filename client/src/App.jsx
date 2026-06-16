@@ -64,7 +64,9 @@ function LoginRoute() {
   const { user, loading } = useAuth();
   if (loading) return <LoadingScreen />;
   if (user) {
-    return user.role === 'executor' ? <Navigate to="/executor" replace /> : <Navigate to="/" replace />;
+    if (user.role === 'executor') return <Navigate to="/executor" replace />;
+    if (user.role === 'admin' || user.role === 'manager') return <Navigate to="/" replace />;
+    // Иная роль (client/неизвестная) — доступа к рабочему месту нет; показываем форму входа (не зацикливаемся).
   }
   return <Login />;
 }
