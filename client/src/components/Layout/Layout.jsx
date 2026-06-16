@@ -11,7 +11,7 @@ const ALL_NAV = [
   { path: '/',           icon: Plus,            label: 'Каталог',     roles: ['admin', 'manager'], accent: true },
   { path: '/dashboard',  icon: LayoutDashboard, label: 'Аналитика',   roles: ['admin'] },
   { path: '/orders',     icon: ShoppingBag,     label: 'Все заказы',  roles: ['admin', 'manager'] },
-  { path: '/products',   icon: Package,         label: 'Каталог',     roles: ['admin'] },
+  { path: '/products',   icon: Package,         label: 'Товары',      roles: ['admin'] },
   { path: '/employees',  icon: Users,           label: 'Сотрудники',  roles: ['admin', 'manager'] },
   { path: '/reports',    icon: BarChart3,       label: 'Отчёты',      roles: ['admin', 'manager'] },
   { path: '/settings',   icon: Settings,        label: 'Настройки',   roles: ['admin', 'manager'] },
