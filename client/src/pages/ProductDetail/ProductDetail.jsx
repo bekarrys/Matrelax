@@ -25,6 +25,8 @@ export default function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState(null);
+  const [customW, setCustomW] = useState('');
+  const [customH, setCustomH] = useState('');
   const [selectedFabric, setSelectedFabric] = useState(null);
   const [extra10cm, setExtra10cm] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
@@ -36,7 +38,11 @@ export default function ProductDetail() {
     api.products.get(id)
       .then((data) => {
         setProduct(data);
-        if (data.sizes?.length) setSelectedSize(data.sizes[0]);
+        if (data.sizes?.length) {
+          setSelectedSize(data.sizes[0]);
+          setCustomW(String(data.sizes[0].width));
+          setCustomH(String(data.sizes[0].height));
+        }
         if (data.fabricOptions?.length) setSelectedFabric(data.fabricOptions[0]);
       })
       .catch((err) => setError(err.message || 'Не удалось загрузить товар'))
@@ -75,7 +81,7 @@ export default function ProductDetail() {
       productId: product.id,
       name: product.name,
       series: product.series,
-      size: `${selectedSize.width}×${selectedSize.height}`,
+      size: `${customW || selectedSize.width}×${customH || selectedSize.height}`,
       fabric: selectedFabric,
       extra10cm,
       price: currentPrice,
@@ -137,11 +143,30 @@ export default function ProductDetail() {
                       ? 'pd-size-btn--active'
                       : ''
                   }`}
-                  onClick={() => setSelectedSize(size)}
+                  onClick={() => { setSelectedSize(size); setCustomW(String(size.width)); setCustomH(String(size.height)); }}
                 >
                   {size.width}×{size.height}
                 </button>
               ))}
+            </div>
+          </div>
+
+          <div className="pd-section">
+            <div className="pd-section-title">свой размер (см)</div>
+            <div className="pd-custom-size">
+              <input
+                type="number" inputMode="numeric" min="1"
+                value={customW}
+                onChange={(e) => setCustomW(e.target.value)}
+                aria-label="ширина"
+              />
+              <span className="pd-custom-x">×</span>
+              <input
+                type="number" inputMode="numeric" min="1"
+                value={customH}
+                onChange={(e) => setCustomH(e.target.value)}
+                aria-label="длина"
+              />
             </div>
           </div>
 
@@ -182,7 +207,7 @@ export default function ProductDetail() {
 
       <div className="pd-bottom">
         <div className="pd-bottom-size">
-          {selectedSize ? `${selectedSize.width}×${selectedSize.height} см` : ''}
+          {selectedSize ? `${customW || selectedSize.width}×${customH || selectedSize.height} см` : ''}
         </div>
         <button
           className={`price-btn ${added ? 'price-btn--added' : ''}`}
