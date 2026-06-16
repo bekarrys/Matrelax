@@ -1,92 +1,53 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../../api';
+import { api } from '../../utils/api';
 import { useCartStore } from '../../store/cartStore';
-import BottomSheet from '../../components/BottomSheet/BottomSheet';
+import { cartToOrderItems, cartTotal } from '../../utils/orderMapping.mjs';
+import { SALES_POINTS, PAYMENT_METHODS, PAYMENT_TYPES, formatPrice, formatPhone } from '../../utils/constants';
 import './Checkout.css';
-
-function formatPrice(price) {
-  return new Intl.NumberFormat('ru-KZ').format(price) + ' ₸';
-}
-
-function formatPhone(raw) {
-  const digits = raw.replace(/\D/g, '');
-  if (!digits) return '';
-  const d = digits.startsWith('8') ? '7' + digits.slice(1) : digits;
-  let result = '+7';
-  if (d.length > 1) result += ' ' + d.slice(1, 4);
-  if (d.length > 4) result += ' ' + d.slice(4, 7);
-  if (d.length > 7) result += ' ' + d.slice(7, 9);
-  if (d.length > 9) result += ' ' + d.slice(9, 11);
-  return result;
-}
-
-const PAYMENT_METHODS = [
-  { key: 'kaspi', label: 'Kaspi.kz', icon: '🟡' },
-  { key: 'card', label: 'Visa / Mastercard', icon: '💳' },
-  { key: 'freedom', label: 'Freedom Pay', icon: '🔵' },
-];
-
-const DELIVERY_TYPES = [
-  { key: 'pickup', label: 'Самовывоз' },
-  { key: 'delivery', label: 'Доставка' },
-];
 
 export default function Checkout() {
   const navigate = useNavigate();
-  const { items, clearCart, paymentMethod: cartPaymentMethod, setPaymentMethod } = useCartStore();
-  const totalPrice = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const { items, clearCart } = useCartStore();
+  const total = cartTotal(items);
 
+  const [salesPoint, setSalesPoint] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [paymentType, setPaymentType] = useState('paid');
+  const [paidAmount, setPaidAmount] = useState('');
   const [deliveryType, setDeliveryType] = useState('pickup');
   const [address, setAddress] = useState('');
-  const [comment, setComment] = useState('');
-  const [showPayment, setShowPayment] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState(cartPaymentMethod);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handlePhoneChange = (e) => {
-    const raw = e.target.value.replace(/\D/g, '');
-    setPhone(raw.slice(0, 11));
-  };
+  const handlePhoneChange = (e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11));
 
-  const canSubmit = name.trim() && phone.length >= 10 && selectedPayment;
+  const paid = paymentType === 'paid' ? total : Number(paidAmount) || 0;
+  const canSubmit = items.length > 0 && salesPoint && name.trim() && phone.length >= 10 && paymentMethod;
 
-  const handlePay = async () => {
+  const handleSubmit = async () => {
     if (!canSubmit) return;
     setLoading(true);
     setError('');
     try {
-      const order = await api.orders.create({
-        customerName: name,
+      const order = await api.adminOrders.create({
+        salesPoint,
+        customerName: name.trim(),
         customerPhone: phone,
+        items: cartToOrderItems(items),
+        totalAmount: total,
+        paymentMethod,
+        paymentType,
+        paidAmount: paid,
+        balance: total - paid,
         deliveryType,
-        address: deliveryType === 'delivery' ? address : '',
-        comment,
-        paymentMethod: selectedPayment,
-        items: items.map((i) => ({
-          productId: i.productId,
-          name: i.name,
-          size: i.size,
-          fabric: i.fabric,
-          extra10cm: i.extra10cm,
-          price: i.price,
-          quantity: i.quantity,
-        })),
-        totalAmount: totalPrice,
+        deliveryAddress: deliveryType === 'delivery' ? address : '',
+        status: 'new',
       });
-
-      // Initiate payment
-      await api.payment.initiate({
-        orderId: order.id,
-        method: selectedPayment,
-        amount: totalPrice,
-      });
-
       clearCart();
-      navigate(`/order/${order.id}`);
+      navigate(`/orders/${order.id}`);
     } catch (err) {
       setError(err.message || 'Ошибка оформления заказа');
     } finally {
@@ -103,44 +64,84 @@ export default function Checkout() {
       </div>
 
       <div className="checkout-body">
-        {/* Name */}
         <div className="co-field">
-          <label>имя</label>
-          <div className="co-input-wrap">
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="ваше имя"
-              autoComplete="name"
-            />
+          <label>точка продаж</label>
+          <div className="co-toggle-row">
+            {Object.entries(SALES_POINTS).map(([key, label]) => (
+              <button
+                key={key}
+                className={`co-toggle-btn ${salesPoint === key ? 'co-toggle-btn--active' : ''}`}
+                onClick={() => setSalesPoint(key)}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Phone */}
+        <div className="co-field">
+          <label>имя клиента</label>
+          <div className="co-input-wrap">
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="имя" />
+          </div>
+        </div>
+
         <div className="co-field">
           <label>телефон</label>
           <div className="co-input-wrap">
-            <input
-              type="tel"
-              value={formatPhone(phone)}
-              onChange={handlePhoneChange}
-              placeholder="+7 XXX XXX XX XX"
-              inputMode="tel"
-            />
+            <input type="tel" value={formatPhone(phone)} onChange={handlePhoneChange} placeholder="+7 XXX XXX XX XX" inputMode="tel" />
           </div>
         </div>
 
-        {/* Delivery */}
+        <div className="co-field">
+          <label>способ оплаты</label>
+          <div className="co-toggle-row">
+            {Object.entries(PAYMENT_METHODS).map(([key, label]) => (
+              <button
+                key={key}
+                className={`co-toggle-btn ${paymentMethod === key ? 'co-toggle-btn--active' : ''}`}
+                onClick={() => setPaymentMethod(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="co-field">
+          <label>статус оплаты</label>
+          <div className="co-toggle-row">
+            {Object.entries(PAYMENT_TYPES).map(([key, label]) => (
+              <button
+                key={key}
+                className={`co-toggle-btn ${paymentType === key ? 'co-toggle-btn--active' : ''}`}
+                onClick={() => setPaymentType(key)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {paymentType !== 'paid' && (
+          <div className="co-field">
+            <label>внесено (KZT)</label>
+            <div className="co-input-wrap">
+              <input type="number" min="0" value={paidAmount} onChange={(e) => setPaidAmount(e.target.value)} placeholder="0" />
+            </div>
+          </div>
+        )}
+
         <div className="co-field">
           <label>получение</label>
           <div className="co-toggle-row">
-            {DELIVERY_TYPES.map((d) => (
+            {[['pickup', 'Самовывоз'], ['delivery', 'Доставка']].map(([key, label]) => (
               <button
-                key={d.key}
-                className={`co-toggle-btn ${deliveryType === d.key ? 'co-toggle-btn--active' : ''}`}
-                onClick={() => setDeliveryType(d.key)}
+                key={key}
+                className={`co-toggle-btn ${deliveryType === key ? 'co-toggle-btn--active' : ''}`}
+                onClick={() => setDeliveryType(key)}
               >
-                {d.label}
+                {label}
               </button>
             ))}
           </div>
@@ -150,93 +151,42 @@ export default function Checkout() {
           <div className="co-field">
             <label>адрес доставки</label>
             <div className="co-input-wrap">
-              <input
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="улица, дом, квартира"
-              />
+              <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="улица, дом, квартира" />
             </div>
           </div>
         )}
 
-        {/* Comment */}
-        <div className="co-field">
-          <label>комментарий <span className="co-optional">(необязательно)</span></label>
-          <div className="co-input-wrap">
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="пожелания к заказу..."
-              rows={3}
-            />
-          </div>
-        </div>
-
-        {/* Payment selection */}
-        <div className="co-field">
-          <label>способ оплаты</label>
-          <div
-            className="co-payment-select"
-            onClick={() => setShowPayment(true)}
-          >
-            {selectedPayment
-              ? PAYMENT_METHODS.find((m) => m.key === selectedPayment)?.label
-              : 'выбрать способ оплаты'}
-            <span className="co-chevron">›</span>
-          </div>
-        </div>
-
-        {/* Order summary */}
         <div className="co-summary">
           <div className="co-summary-title">состав заказа</div>
           {items.map((item) => (
             <div key={item.id} className="co-summary-row">
-              <span>{item.name} {item.size} см × {item.quantity}</span>
+              <span>{item.name} {item.size} × {item.quantity}</span>
               <span>{formatPrice(item.price * item.quantity)}</span>
             </div>
           ))}
           <div className="co-summary-divider" />
           <div className="co-summary-total">
             <span>итого</span>
-            <span>{formatPrice(totalPrice)}</span>
+            <span>{formatPrice(total)}</span>
           </div>
+          {paymentType !== 'paid' && (
+            <div className="co-summary-row"><span>долг</span><span>{formatPrice(total - paid)}</span></div>
+          )}
         </div>
 
         {error && <div className="co-error">{error}</div>}
       </div>
 
-      {/* Pay button */}
       <div className="checkout-footer">
         <button
           className="price-btn"
-          onClick={handlePay}
+          onClick={handleSubmit}
           disabled={!canSubmit || loading}
           style={{ opacity: !canSubmit ? 0.5 : 1 }}
         >
-          {loading ? 'обработка...' : `оплатить ${formatPrice(totalPrice)}`}
+          {loading ? 'создание...' : `создать заказ · ${formatPrice(total)}`}
         </button>
       </div>
-
-      {/* Payment bottom sheet */}
-      <BottomSheet
-        isOpen={showPayment}
-        onClose={() => setShowPayment(false)}
-        title="способ оплаты"
-      >
-        <div className="payment-methods">
-          {PAYMENT_METHODS.map((method) => (
-            <div
-              key={method.key}
-              className={`payment-method ${selectedPayment === method.key ? 'payment-method--active' : ''}`}
-              onClick={() => { setSelectedPayment(method.key); setPaymentMethod(method.key); setShowPayment(false); }}
-            >
-              <span className="payment-icon">{method.icon}</span>
-              <span className="payment-label">{method.label}</span>
-              {selectedPayment === method.key && <span className="payment-check">✓</span>}
-            </div>
-          ))}
-        </div>
-      </BottomSheet>
     </div>
   );
 }
