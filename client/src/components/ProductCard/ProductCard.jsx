@@ -17,7 +17,9 @@ export default function ProductCard({ product, index }) {
       onClick={() => navigate(`/product/${product.id}`)}
     >
       <div className="product-card__image">
-        <BedIcon />
+        {product.imageUrl
+          ? <img src={product.imageUrl} alt={product.name} className="product-card__img" loading="lazy" />
+          : <BedIcon />}
       </div>
       <div className="product-card__body">
         <div className="product-card__name">{product.name}</div>

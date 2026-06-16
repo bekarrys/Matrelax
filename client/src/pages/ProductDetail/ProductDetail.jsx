@@ -88,14 +88,18 @@ export default function ProductDetail() {
     <>
       <div className="pd-page page-enter">
         <div className="pd-image">
-          <div className="pd-image-placeholder">
-            <svg width="80" height="80" viewBox="0 0 48 48" fill="none">
-              <rect x="4" y="18" width="40" height="20" rx="4" stroke="#444" strokeWidth="2" fill="none"/>
-              <rect x="8" y="14" width="32" height="6" rx="2" stroke="#444" strokeWidth="2" fill="none"/>
-              <line x1="4" y1="38" x2="10" y2="44" stroke="#444" strokeWidth="2" strokeLinecap="round"/>
-              <line x1="44" y1="38" x2="38" y2="44" stroke="#444" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-          </div>
+          {product.imageUrl ? (
+            <img src={product.imageUrl} alt={product.name} className="pd-image-img" />
+          ) : (
+            <div className="pd-image-placeholder">
+              <svg width="80" height="80" viewBox="0 0 48 48" fill="none">
+                <rect x="4" y="18" width="40" height="20" rx="4" stroke="#444" strokeWidth="2" fill="none"/>
+                <rect x="8" y="14" width="32" height="6" rx="2" stroke="#444" strokeWidth="2" fill="none"/>
+                <line x1="4" y1="38" x2="10" y2="44" stroke="#444" strokeWidth="2" strokeLinecap="round"/>
+                <line x1="44" y1="38" x2="38" y2="44" stroke="#444" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </div>
+          )}
           <button className="pd-back" onClick={() => navigate(-1)}>←</button>
           <button className="pd-close" onClick={() => navigate('/')}>✕</button>
         </div>
