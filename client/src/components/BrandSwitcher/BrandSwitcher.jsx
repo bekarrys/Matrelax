@@ -4,7 +4,7 @@ import { ShoppingBag, Package } from 'lucide-react';
 import './BrandSwitcher.css';
 
 // Пути публичной витрины — по ним определяем текущий контекст.
-const STOREFRONT_PATHS = ['/shop', '/product', '/checkout', '/order'];
+const STOREFRONT_PATHS = ['/product', '/checkout'];
 
 /**
  * BrandSwitcher — логотип «matrelax» как переключатель контекста
@@ -15,8 +15,8 @@ export default function BrandSwitcher() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
-  const inStorefront = STOREFRONT_PATHS.some((p) => pathname.startsWith(p));
-  const target = inStorefront ? '/orders' : '/shop';
+  const inStorefront = pathname === '/' || STOREFRONT_PATHS.some((p) => pathname.startsWith(p));
+  const target = inStorefront ? '/orders' : '/';
   const Icon = inStorefront ? ShoppingBag : Package;
   const sub = inStorefront ? 'Магазин' : 'Заказы';
 

@@ -2,8 +2,6 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../store/cartStore';
 import { api } from '../../api';
-import BottomSheet from '../BottomSheet/BottomSheet';
-import { PAYMENT_METHODS } from '../../pages/Cart/paymentMethods';
 import './CartSheet.css';
 
 function formatPrice(price) {
@@ -31,10 +29,9 @@ function UpsellCard({ product, onAdd }) {
 
 export default function CartSheet() {
   const navigate = useNavigate();
-  const { isCartOpen, closeCart, items, addItem, removeItem, updateQuantity, paymentMethod, setPaymentMethod } =
+  const { isCartOpen, closeCart, items, addItem, removeItem, updateQuantity } =
     useCartStore();
   const totalPrice = useMemo(() => items.reduce((sum, i) => sum + i.price * i.quantity, 0), [items]);
-  const [showPayment, setShowPayment] = useState(false);
   const [upsell, setUpsell] = useState([]);
 
   const SHOP_CATEGORIES = ['mattresses', 'toppers', 'protectors', 'pillows'];
@@ -151,10 +148,6 @@ export default function CartSheet() {
 
             {/* Fixed footer */}
             <div className="cs-footer">
-              <button className="cs-payment-btn" onClick={() => setShowPayment(true)}>
-                <span>{paymentMethod ? PAYMENT_METHODS.find((m) => m.key === paymentMethod)?.label : 'способ оплаты'}</span>
-                <span className="cs-chevron">›</span>
-              </button>
               <div className="cs-footer__main">
                 <div className="cs-total">
                   <span>итого</span>
@@ -168,22 +161,6 @@ export default function CartSheet() {
           </>
         )}
       </div>
-
-      <BottomSheet isOpen={showPayment} onClose={() => setShowPayment(false)} title="способ оплаты">
-        <div className="payment-methods">
-          {PAYMENT_METHODS.map((method) => (
-            <div
-              key={method.key}
-              className={`payment-method ${paymentMethod === method.key ? 'payment-method--active' : ''}`}
-              onClick={() => { setPaymentMethod(method.key); setShowPayment(false); }}
-            >
-              <span className="payment-icon">{method.icon}</span>
-              <span className="payment-label">{method.label}</span>
-              {paymentMethod === method.key && <span className="payment-check">✓</span>}
-            </div>
-          ))}
-        </div>
-      </BottomSheet>
     </div>
   );
 }

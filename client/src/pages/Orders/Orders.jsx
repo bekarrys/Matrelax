@@ -76,9 +76,9 @@ export default function Orders() {
           <h1>История заказов</h1>
           <p className="page-subtitle">Управление заказами производства</p>
         </div>
-        <Link to="/orders/new" className="btn-primary">
+        <Link to="/" className="btn-primary">
           <Plus size={16} />
-          Новый заказ
+          Каталог
         </Link>
       </div>
 

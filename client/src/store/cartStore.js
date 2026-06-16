@@ -5,13 +5,10 @@ export const useCartStore = create(
   persist(
     (set) => ({
       items: [],
-      paymentMethod: null,
       isCartOpen: false,
 
       openCart:  () => set({ isCartOpen: true }),
       closeCart: () => set({ isCartOpen: false }),
-
-      setPaymentMethod: (method) => set({ paymentMethod: method }),
 
       addItem: (item) => set((state) => {
         const existing = state.items.find(
@@ -47,12 +44,12 @@ export const useCartStore = create(
               : state.items.map((i) => (i.id === id ? { ...i, quantity } : i)),
         })),
 
-      clearCart: () => set({ items: [], paymentMethod: null }),
+      clearCart: () => set({ items: [] }),
     }),
     {
       name: 'matrelax-cart',
       // Сохраняем только items — функции и вычисляемые значения не трогаем
-      partialize: (state) => ({ items: state.items, paymentMethod: state.paymentMethod }),
+      partialize: (state) => ({ items: state.items }),
     }
   )
 );
