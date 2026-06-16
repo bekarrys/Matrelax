@@ -42,7 +42,7 @@ export default function Layout({ children }) {
       {/* ── Desktop Sidebar ── */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : 'collapsed'}`}>
         <div className="sidebar-header">
-          <Link to="/orders" className="sidebar-logo">
+          <Link to="/" className="sidebar-logo" title="На витрину">
             <Bed size={24} strokeWidth={1.5} />
             {sidebarOpen && <span>MATRELAX</span>}
           </Link>
@@ -91,7 +91,7 @@ export default function Layout({ children }) {
         <button className="menu-btn" onClick={() => setMobileMenuOpen(true)}>
           <Menu size={22} />
         </button>
-        <Link to="/orders" className="mobile-logo">
+        <Link to="/" className="mobile-logo" title="На витрину">
           <Bed size={22} strokeWidth={1.5} />
           <span>MATRELAX</span>
         </Link>
