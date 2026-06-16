@@ -13,7 +13,7 @@ function paymentInfo(o) {
   const total = o.totalAmount || 0;
   const paid = o.paidAmount || 0;
   if (total > 0 && paid >= total) return { label: 'Оплачен', kind: 'paid' };
-  if (paid > 0) return { label: 'Аванс', kind: 'advance' };
+  if (paid > 0) return { label: 'Частично', kind: 'advance' };
   return { label: 'Долг', kind: 'debt' };
 }
 

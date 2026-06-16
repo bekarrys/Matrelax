@@ -70,7 +70,6 @@ export const CLIENT_CATEGORIES = {
 export const PAYMENT_TYPES = {
   paid: 'Оплачен',
   debt: 'Долг',
-  advance: 'Аванс',
 };
 
 export const PAYMENT_METHODS = {
