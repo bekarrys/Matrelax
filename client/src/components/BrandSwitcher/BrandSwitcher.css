@@ -11,10 +11,38 @@
   cursor: pointer;
   font-family: inherit;
   color: var(--text-primary);
-  transition: opacity 0.15s ease, transform 0.1s ease;
+  position: relative;
+  transition: transform 0.1s ease;
 }
-.brand-switcher:hover { opacity: 0.85; }
+.brand-switcher:hover .brand-switcher__name { color: var(--accent); }
 .brand-switcher:active { transform: scale(0.97); }
+
+/* Тултип-подсказка назначения при наведении (концепт SocialTooltip) */
+.brand-switcher__tooltip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  white-space: nowrap;
+  background: var(--surface-3);
+  color: var(--text-primary);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+  pointer-events: none;
+  z-index: 50;
+}
+.brand-switcher:hover .brand-switcher__tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
 
 .brand-switcher__icon {
   display: flex;

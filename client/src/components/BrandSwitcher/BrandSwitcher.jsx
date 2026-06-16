@@ -19,14 +19,14 @@ export default function BrandSwitcher() {
   const target = inStorefront ? '/orders' : '/';
   const Icon = inStorefront ? ShoppingBag : Package;
   const sub = inStorefront ? 'Магазин' : 'Заказы';
+  const tooltip = inStorefront ? 'История заказов →' : 'Витрина →';
 
   return (
     <button
       type="button"
       className="brand-switcher"
       onClick={() => navigate(target)}
-      title={inStorefront ? 'Переключиться на заказы' : 'Переключиться на магазин'}
-      aria-label={inStorefront ? 'Открыть управление заказами' : 'Открыть магазин'}
+      aria-label={inStorefront ? 'Открыть историю заказов' : 'Открыть витрину'}
     >
       {/* key меняется при смене контекста → перезапуск анимации иконки */}
       <span className="brand-switcher__icon" key={inStorefront ? 'store' : 'orders'}>
@@ -36,6 +36,8 @@ export default function BrandSwitcher() {
         <span className="brand-switcher__name">matrelax</span>
         <span className="brand-switcher__sub">{sub}</span>
       </span>
+      {/* Подсказка-тултип при наведении (адаптация SocialTooltip) */}
+      <span className="brand-switcher__tooltip">{tooltip}</span>
     </button>
   );
 }
