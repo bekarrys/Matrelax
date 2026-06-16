@@ -262,7 +262,7 @@ export default function OrderDetails() {
                   </div>
                 );
               }
-              const modelName = catalog?.models[item.modelId]?.name || item.modelId;
+              const modelName = item.name || catalog?.models[item.modelId]?.name || item.modelId;
               const unit = (item.price || 0) + (item.surcharge || 0);
               return (
                 <div key={idx} className="detail-item">

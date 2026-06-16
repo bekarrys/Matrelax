@@ -8,7 +8,7 @@ import {
 import './Layout.css';
 
 const ALL_NAV = [
-  { path: '/orders/new', icon: Plus,            label: 'Новый заказ', roles: ['admin', 'manager'], accent: true },
+  { path: '/',           icon: Plus,            label: 'Каталог',     roles: ['admin', 'manager'], accent: true },
   { path: '/dashboard',  icon: LayoutDashboard, label: 'Аналитика',   roles: ['admin'] },
   { path: '/orders',     icon: ShoppingBag,     label: 'Все заказы',  roles: ['admin', 'manager'] },
   { path: '/products',   icon: Package,         label: 'Каталог',     roles: ['admin'] },
@@ -17,10 +17,8 @@ const ALL_NAV = [
   { path: '/settings',   icon: Settings,        label: 'Настройки',   roles: ['admin', 'manager'] },
 ];
 
-// «Новый заказ» — точное совпадение; «Все заказы» активна на /orders и /orders/:id, но не на /orders/new.
 function navActive(path, pathname) {
-  if (path === '/orders/new') return pathname === '/orders/new';
-  if (path === '/orders') return pathname.startsWith('/orders') && pathname !== '/orders/new';
+  if (path === '/') return pathname === '/';
   return pathname.startsWith(path);
 }
 
