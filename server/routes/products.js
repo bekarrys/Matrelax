@@ -12,7 +12,7 @@ const adminOnly = [verifyToken, requireRole('admin')];
 const ALLOWED_FIELDS = [
   'name', 'series', 'category', 'descriptionLong',
   'specs', 'sizes', 'fabricOptions', 'extra10cm', 'surcharge10cm', 'image',
-  'isActive', 'prices', 'composition', 'inStock', 'imageUrl',
+  'isActive', 'prices', 'marketPrices', 'composition', 'inStock', 'imageUrl',
 ];
 
 const DEFAULT_SERIES = 'Базовая коллекция';
@@ -44,27 +44,32 @@ function validateProductTypes(fields) {
 
 // Каждая ячейка ткань×размер должна быть положительным числом — иначе товар
 // с ценой 0/null уедет на витрину. Проверяем только если матрица передана.
-function validatePriceMatrix(fields) {
-  if (fields.prices === undefined) return null;
-  if (typeof fields.prices !== 'object' || fields.prices === null || Array.isArray(fields.prices)) {
-    return 'Матрица цен должна быть объектом';
+function validateMatrix(matrix, fabrics, sizes, label) {
+  if (matrix === undefined) return null;
+  if (typeof matrix !== 'object' || matrix === null || Array.isArray(matrix)) {
+    return `${label}: матрица должна быть объектом`;
   }
-  const fabrics = fields.fabricOptions;
-  const sizes = fields.sizes;
-  if (!Array.isArray(fabrics) || fabrics.length === 0) return 'Не заданы ткани для матрицы цен';
-  if (!Array.isArray(sizes) || sizes.length === 0) return 'Не заданы размеры для матрицы цен';
+  if (!Array.isArray(fabrics) || fabrics.length === 0) return `${label}: не заданы ткани`;
+  if (!Array.isArray(sizes) || sizes.length === 0) return `${label}: не заданы размеры`;
   for (const fabric of fabrics) {
-    const row = fields.prices[fabric];
-    if (!row || typeof row !== 'object') return `Нет цен для ткани «${fabric}»`;
+    const row = matrix[fabric];
+    if (!row || typeof row !== 'object') return `${label}: нет цен для ткани «${fabric}»`;
     for (const s of sizes) {
       const key = `${s.width}x${s.height}`;
       const v = row[key];
       if (typeof v !== 'number' || v <= 0) {
-        return `Не заполнена цена: ткань «${fabric}», размер ${key}`;
+        return `${label}: не заполнена цена, ткань «${fabric}», размер ${key}`;
       }
     }
   }
   return null;
+}
+
+function validatePriceMatrix(fields) {
+  return (
+    validateMatrix(fields.prices, fields.fabricOptions, fields.sizes, 'Цены продажи') ||
+    validateMatrix(fields.marketPrices, fields.fabricOptions, fields.sizes, 'Рыночные цены')
+  );
 }
 
 // GET /api/products?category=mattresses

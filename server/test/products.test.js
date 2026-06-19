@@ -46,6 +46,10 @@ function goodMattress(over = {}) {
       'Стандарт': { '80x200': 23000, '200x200': 44000 },
       'Люкс': { '80x200': 30000, '200x200': 58000 },
     },
+    marketPrices: {
+      'Стандарт': { '80x200': 30000, '200x200': 51000 },
+      'Люкс': { '80x200': 37000, '200x200': 65000 },
+    },
     composition: ['Кокос'], extra10cm: true, surcharge10cm: 7000, isActive: true,
     ...over,
   };
@@ -67,6 +71,16 @@ test('POST rejects matrix with missing/zero cell', async () => {
     const r = await req(port, 'POST', '/api/products', { user: ADMIN, body: bad });
     assert.equal(r.status, 400);
     assert.match(r.json.error, /цен/i);
+  });
+});
+
+test('POST rejects incomplete marketPrices matrix', async () => {
+  const { router } = loadRouter({});
+  await withServer(router, async (port) => {
+    const bad = goodMattress({ marketPrices: { 'Стандарт': { '80x200': 30000, '200x200': 51000 }, 'Люкс': { '80x200': 0, '200x200': 65000 } } });
+    const r = await req(port, 'POST', '/api/products', { user: ADMIN, body: bad });
+    assert.equal(r.status, 400);
+    assert.match(r.json.error, /Рыночные цены/i);
   });
 });
 

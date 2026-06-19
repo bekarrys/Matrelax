@@ -1,41 +1,60 @@
 // Real Matrelax catalog — transcribed from Cost.md. Source of truth for seeding.
 // Fabric mapping: C-1→Стандарт, C-2→Комфорт, C-3→Премиум, B-3→Люкс.
 // Royal (R-01/02/03) use a single ткань "Royal".
+//
+// ВАЖНО по ценам: значения из Cost.md — это РЫНОЧНЫЕ цены (marketPrices).
+// Реальная цена продажи (prices) = рыночная − MARKET_MARKUP (7000) по каждой ячейке.
 
 const SIZES = [80, 90, 100, 120, 140, 160, 180, 200].map((w) => ({ width: w, height: 200 }));
 const FABRICS = ['Стандарт', 'Комфорт', 'Премиум', 'Люкс'];
+const MARKET_MARKUP = 7000;
 
-// Build prices{} from 4 rows of 8 numbers (rows order = FABRICS, cols order = SIZES).
-function matrix(rows) {
+// Build a matrix{} from rows of numbers (rows order = fabrics, cols order = SIZES).
+function buildMatrix(fabrics, rows) {
   const out = {};
-  FABRICS.forEach((f, fi) => {
+  fabrics.forEach((f, fi) => {
     out[f] = {};
     SIZES.forEach((s, si) => { out[f][`${s.width}x${s.height}`] = rows[fi][si]; });
   });
   return out;
 }
 
-// Build a single-fabric "Royal" price row from 8 numbers (cols order = SIZES).
-function royal(row) {
-  const out = { Royal: {} };
-  SIZES.forEach((s, si) => { out.Royal[`${s.width}x${s.height}`] = row[si]; });
+// Given a market matrix, produce the sale matrix (market − markup per cell).
+function saleFromMarket(market) {
+  const out = {};
+  for (const f of Object.keys(market)) {
+    out[f] = {};
+    for (const k of Object.keys(market[f])) out[f][k] = market[f][k] - MARKET_MARKUP;
+  }
   return out;
 }
 
+// rows = 4 market rows (Cost.md values). Returns { marketPrices, prices }.
+function tieredPrices(rows) {
+  const marketPrices = buildMatrix(FABRICS, rows);
+  return { marketPrices, prices: saleFromMarket(marketPrices) };
+}
+
+function royalPrices(row) {
+  const marketPrices = buildMatrix(['Royal'], [row]);
+  return { marketPrices, prices: saleFromMarket(marketPrices) };
+}
+
 function tiered(over) {
+  const { prices, marketPrices, ...rest } = over;
   return {
     category: 'mattresses', fabricOptions: FABRICS, sizes: SIZES,
     extra10cm: true, surcharge10cm: 7000, isActive: true, inStock: true, imageUrl: '',
-    ...over,
+    prices, marketPrices, ...rest,
   };
 }
 
 function royalModel(over) {
+  const { prices, marketPrices, ...rest } = { ...royalPrices([96000, 105000, 113000, 131000, 149000, 167000, 185000, 203000]), ...over };
   return {
     category: 'mattresses', fabricOptions: ['Royal'], sizes: SIZES,
     extra10cm: true, surcharge10cm: 7000, isActive: true, inStock: true,
-    prices: royal([96000, 105000, 113000, 131000, 149000, 167000, 185000, 203000]),
-    ...over,
+    prices, marketPrices, ...rest,
   };
 }
 
@@ -44,7 +63,7 @@ const MATTRESSES = [
     id: '500', name: '500', series: 'Боннельные',
     specs: { type: 'Боннельный, Полу-ортопед', firmness: 'Жесткий', height: '20-24см', load: '90кг', warranty: '-', serviceLife: '10 лет' },
     composition: ['Кокосовая койра', 'Термовойлок', 'Пружинный Боннель'],
-    prices: matrix([
+    ...tieredPrices([
       [23000, 25000, 27000, 30000, 34000, 37000, 40000, 44000],
       [25000, 27000, 29000, 33000, 37000, 40000, 44000, 48000],
       [29000, 31000, 34000, 37000, 42000, 46000, 50000, 55000],
@@ -55,7 +74,7 @@ const MATTRESSES = [
     id: '504', name: '504', series: 'Боннельные',
     specs: { type: 'Боннельный, Полу-ортопед', firmness: 'Средний', height: '18-22см', load: '90кг', warranty: '-', serviceLife: '10 лет' },
     composition: ['Орто Пена', 'Термовойлок', 'Пружинный Боннель'],
-    prices: matrix([
+    ...tieredPrices([
       [19000, 20000, 22000, 24000, 27000, 29000, 31000, 34000],
       [21000, 22000, 24000, 27000, 30000, 32000, 35000, 38000],
       [25000, 26000, 29000, 31000, 35000, 38000, 41000, 45000],
@@ -66,7 +85,7 @@ const MATTRESSES = [
     id: '702', name: '702', series: 'Зима-Лето',
     specs: { type: 'Ортопедический, Зима-Лето', firmness: 'Средне-Жесткий / Средне-Мягкий', height: '20-24см', load: '120кг', warranty: '1 год', serviceLife: '20 лет' },
     composition: ['Кокосовая койра', 'Орто Пена', 'Термовойлок', 'Независимые пружины'],
-    prices: matrix([
+    ...tieredPrices([
       [34000, 36000, 39000, 43000, 46000, 50000, 53000, 57000],
       [36000, 38000, 41000, 46000, 49000, 53000, 57000, 61000],
       [40000, 42000, 46000, 50000, 54000, 59000, 63000, 68000],
@@ -77,7 +96,7 @@ const MATTRESSES = [
     id: '707', name: '707', series: 'Беспружинные', imageUrl: '/products/707.png',
     specs: { type: 'Беспружинный', firmness: 'Жесткий / Средний', height: '19-23см', load: '120кг', warranty: '1 год', serviceLife: '20 лет' },
     composition: ['Кокосовая койра', 'Орто Пена'],
-    prices: matrix([
+    ...tieredPrices([
       [35000, 37000, 40000, 45000, 49000, 54000, 59000, 64000],
       [37000, 39000, 42000, 48000, 52000, 57000, 63000, 68000],
       [41000, 43000, 47000, 52000, 57000, 63000, 69000, 75000],
@@ -88,7 +107,7 @@ const MATTRESSES = [
     id: 'K-01', name: 'K-01', series: 'Ортопедические',
     specs: { type: 'Ортопедический', firmness: 'Средний', height: '20-24см', load: '100кг', warranty: '1 год', serviceLife: '20 лет' },
     composition: ['Кокосовая койра', 'Термовойлок', 'Независимые пружины'],
-    prices: matrix([
+    ...tieredPrices([
       [34000, 36000, 39000, 43000, 46000, 50000, 53000, 57000],
       [36000, 38000, 41000, 46000, 49000, 53000, 57000, 61000],
       [40000, 42000, 46000, 50000, 54000, 59000, 63000, 68000],
@@ -99,7 +118,7 @@ const MATTRESSES = [
     id: 'K-02', name: 'K-02', series: 'Ортопедические',
     specs: { type: 'Ортопедический', firmness: 'Средне-Жесткий', height: '22-26см', load: '120кг', warranty: '1 год', serviceLife: '20 лет' },
     composition: ['Кокосовая койра', 'Термовойлок', 'Независимые пружины'],
-    prices: matrix([
+    ...tieredPrices([
       [38000, 40000, 44000, 49000, 53000, 58000, 62000, 67000],
       [40000, 42000, 46000, 52000, 56000, 61000, 66000, 71000],
       [44000, 46000, 51000, 56000, 61000, 67000, 72000, 78000],
@@ -110,7 +129,7 @@ const MATTRESSES = [
     id: 'K-03', name: 'K-03', series: 'Ортопедические',
     specs: { type: 'Ортопедический', firmness: 'Жесткий', height: '24-28см', load: '140кг', warranty: '1 год', serviceLife: '20 лет' },
     composition: ['Кокосовая койра', 'Термовойлок', 'Независимые пружины'],
-    prices: matrix([
+    ...tieredPrices([
       [42000, 44000, 49000, 54000, 60000, 65000, 71000, 76000],
       [44000, 46000, 51000, 57000, 63000, 68000, 75000, 80000],
       [48000, 50000, 56000, 61000, 68000, 74000, 81000, 87000],
@@ -121,7 +140,7 @@ const MATTRESSES = [
     id: 'L-01', name: 'L-01', series: 'Ортопедические', imageUrl: '/products/L-01.png',
     specs: { type: 'Ортопедический', firmness: 'Средний', height: '20-24см', load: '100кг', warranty: '1 год', serviceLife: '20 лет' },
     composition: ['Кокосовая койра', 'Термовойлок', 'Независимые пружины'],
-    prices: matrix([
+    ...tieredPrices([
       [34000, 36000, 39000, 43000, 46000, 50000, 53000, 57000],
       [36000, 38000, 41000, 46000, 49000, 53000, 57000, 61000],
       [40000, 42000, 46000, 50000, 54000, 59000, 63000, 68000],
@@ -132,7 +151,7 @@ const MATTRESSES = [
     id: 'L-02', name: 'L-02', series: 'Ортопедические', imageUrl: '/products/L-02.png',
     specs: { type: 'Ортопедический', firmness: 'Средне-Жесткий', height: '22-26см', load: '120кг', warranty: '1 год', serviceLife: '20 лет' },
     composition: ['Кокосовая койра', 'Термовойлок', 'Независимые пружины'],
-    prices: matrix([
+    ...tieredPrices([
       [38000, 40000, 44000, 49000, 53000, 58000, 62000, 67000],
       [40000, 42000, 46000, 52000, 56000, 61000, 66000, 71000],
       [44000, 46000, 51000, 56000, 61000, 67000, 72000, 78000],
@@ -143,7 +162,7 @@ const MATTRESSES = [
     id: 'Z-00', name: 'Z-00', series: 'Зима-Лето', imageUrl: '/products/Z-00.png',
     specs: { type: 'Ортопедический', firmness: 'Средне-Мягкий', height: '18-22см', load: '100кг', warranty: '1 год', serviceLife: '20 лет' },
     composition: ['Орто Пена', 'Термовойлок', 'Независимые пружины'],
-    prices: matrix([
+    ...tieredPrices([
       [30000, 31000, 34000, 37000, 39000, 42000, 45000, 47000],
       [32000, 33000, 36000, 40000, 42000, 45000, 49000, 51000],
       [36000, 37000, 41000, 44000, 47000, 51000, 55000, 58000],
@@ -154,7 +173,7 @@ const MATTRESSES = [
     id: 'Z-01', name: 'Z-01', series: 'Зима-Лето', imageUrl: '/products/Z-01.png',
     specs: { type: 'Ортопедический, Зима-Лето', firmness: 'Средний / Средне-Мягкий', height: '19-23см', load: '100кг', warranty: '1 год', serviceLife: '20 лет' },
     composition: ['Кокосовая койра', 'Орто Пена', 'Термовойлок', 'Независимые пружины'],
-    prices: matrix([
+    ...tieredPrices([
       [32000, 34000, 37000, 40000, 43000, 46000, 49000, 52000],
       [34000, 36000, 39000, 43000, 46000, 49000, 53000, 56000],
       [38000, 40000, 44000, 47000, 51000, 55000, 59000, 63000],
@@ -165,7 +184,7 @@ const MATTRESSES = [
     id: 'Z-02', name: 'Z-02', series: 'Зима-Лето', imageUrl: '/products/Z-02.png',
     specs: { type: 'Ортопедический, Зима-Лето', firmness: 'Средне-Жесткий / Средне-Мягкий', height: '20-24см', load: '120кг', warranty: '1 год', serviceLife: '20 лет' },
     composition: ['Кокосовая койра', 'Орто Пена', 'Термовойлок', 'Независимые пружины'],
-    prices: matrix([
+    ...tieredPrices([
       [34000, 36000, 39000, 43000, 46000, 50000, 53000, 57000],
       [36000, 38000, 41000, 46000, 49000, 53000, 57000, 61000],
       [40000, 42000, 46000, 50000, 54000, 59000, 63000, 68000],
@@ -176,7 +195,7 @@ const MATTRESSES = [
     id: 'Z-03', name: 'Z-03', series: 'Зима-Лето', imageUrl: '/products/Z-03.png',
     specs: { type: 'Ортопедический, Зима-Лето', firmness: 'Жесткий / Средне-Мягкий', height: '21-25см', load: '140кг', warranty: '1 год', serviceLife: '20 лет' },
     composition: ['Кокосовая койра', 'Орто Пена', 'Термовойлок', 'Независимые пружины'],
-    prices: matrix([
+    ...tieredPrices([
       [36000, 38000, 42000, 46000, 50000, 54000, 58000, 62000],
       [38000, 40000, 44000, 49000, 53000, 57000, 62000, 66000],
       [42000, 44000, 49000, 53000, 58000, 63000, 68000, 73000],

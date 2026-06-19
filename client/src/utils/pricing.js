@@ -1,25 +1,44 @@
-// Pure price resolver shared by storefront card, product detail, and cart.
-// New model: prices[ткань][размер] = number. Legacy fallback: sizes[].price.
+// Pure price resolver shared by storefront card, product detail, cart, analytics.
+// Model: prices[ткань][размер] (реальная цена продажи) and
+//        marketPrices[ткань][размер] (рекомендованная рыночная цена).
+// Legacy fallback for getMinPrice: sizes[].price.
 
 export const sizeKey = (w, h) => `${w}x${h}`;
 
+function asMatrix(m) {
+  return m && typeof m === 'object' && !Array.isArray(m) ? m : {};
+}
+
+// Защитные геттеры матриц — никогда не кидают, всегда возвращают объект.
+export function getPrices(product) {
+  return asMatrix(product?.prices);
+}
+export function getMarketPrices(product) {
+  return asMatrix(product?.marketPrices);
+}
+
+function cellFrom(matrix, fabric, size) {
+  const v = matrix?.[fabric]?.[size];
+  return typeof v === 'number' ? v : 0;
+}
+
 export function getPrice(product, fabric, size) {
-  const cell = product?.prices?.[fabric]?.[size];
-  return typeof cell === 'number' ? cell : 0;
+  return cellFrom(getPrices(product), fabric, size);
+}
+export function getMarketPrice(product, fabric, size) {
+  return cellFrom(getMarketPrices(product), fabric, size);
 }
 
 export function getMinPrice(product) {
-  const matrix = product?.prices;
-  if (matrix && typeof matrix === 'object') {
-    const vals = [];
-    for (const fabric of Object.keys(matrix)) {
-      for (const size of Object.keys(matrix[fabric] || {})) {
-        const v = matrix[fabric][size];
-        if (typeof v === 'number' && v > 0) vals.push(v);
-      }
+  const matrix = getPrices(product);
+  const vals = [];
+  for (const fabric of Object.keys(matrix)) {
+    for (const size of Object.keys(matrix[fabric] || {})) {
+      const v = matrix[fabric][size];
+      if (typeof v === 'number' && v > 0) vals.push(v);
     }
-    if (vals.length) return Math.min(...vals);
   }
+  if (vals.length) return Math.min(...vals);
   // legacy fallback
   const legacy = (product?.sizes || [])
     .map((s) => s.price)
@@ -28,14 +47,16 @@ export function getMinPrice(product) {
 }
 
 // Returns [{fabric, size}] for every expected cell that is missing or <= 0.
-export function priceMatrixIssues(product) {
+// `field` selects which matrix to check: 'prices' (default) or 'marketPrices'.
+export function priceMatrixIssues(product, field = 'prices') {
   const issues = [];
   const fabrics = product?.fabricOptions || [];
   const sizes = product?.sizes || [];
+  const matrix = field === 'marketPrices' ? getMarketPrices(product) : getPrices(product);
   for (const fabric of fabrics) {
     for (const s of sizes) {
       const key = sizeKey(s.width, s.height);
-      const v = product?.prices?.[fabric]?.[key];
+      const v = matrix?.[fabric]?.[key];
       if (typeof v !== 'number' || v <= 0) issues.push({ fabric, size: key });
     }
   }

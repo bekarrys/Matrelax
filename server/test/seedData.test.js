@@ -7,12 +7,26 @@ test('exactly 16 models with unique ids', () => {
   assert.equal(new Set(MATTRESSES.map((m) => m.id)).size, 16);
 });
 
-test('every cell of every matrix is a positive number', () => {
+test('every cell of both matrices is a positive number', () => {
   for (const m of MATTRESSES) {
     for (const fabric of m.fabricOptions) {
       for (const s of m.sizes) {
-        const v = m.prices[fabric][`${s.width}x${s.height}`];
-        assert.ok(typeof v === 'number' && v > 0, `${m.id} ${fabric} ${s.width}x${s.height}`);
+        const key = `${s.width}x${s.height}`;
+        const sale = m.prices[fabric][key];
+        const market = m.marketPrices[fabric][key];
+        assert.ok(typeof sale === 'number' && sale > 0, `sale ${m.id} ${fabric} ${key}`);
+        assert.ok(typeof market === 'number' && market > 0, `market ${m.id} ${fabric} ${key}`);
+      }
+    }
+  }
+});
+
+test('sale price = market price − 7000 for every cell', () => {
+  for (const m of MATTRESSES) {
+    for (const fabric of m.fabricOptions) {
+      for (const s of m.sizes) {
+        const key = `${s.width}x${s.height}`;
+        assert.equal(m.marketPrices[fabric][key] - m.prices[fabric][key], 7000, `${m.id} ${fabric} ${key}`);
       }
     }
   }

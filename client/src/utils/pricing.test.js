@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { getMinPrice, getPrice, priceMatrixIssues } from './pricing.js';
+import { getMinPrice, getPrice, getMarketPrice, getPrices, getMarketPrices, priceMatrixIssues } from './pricing.js';
 
 const product = {
   fabricOptions: ['Стандарт', 'Люкс'],
@@ -8,6 +8,10 @@ const product = {
   prices: {
     'Стандарт': { '80x200': 23000, '200x200': 44000 },
     'Люкс': { '80x200': 30000, '200x200': 58000 },
+  },
+  marketPrices: {
+    'Стандарт': { '80x200': 30000, '200x200': 51000 },
+    'Люкс': { '80x200': 37000, '200x200': 65000 },
   },
 };
 
@@ -35,4 +39,24 @@ test('priceMatrixIssues flags missing/zero cell', () => {
 test('getMinPrice handles legacy sizes[].price fallback', () => {
   const legacy = { sizes: [{ width: 80, height: 200, price: 15000 }] };
   assert.equal(getMinPrice(legacy), 15000);
+});
+
+test('getMarketPrice resolves market matrix', () => {
+  assert.equal(getMarketPrice(product, 'Люкс', '200x200'), 65000);
+});
+
+test('getMinPrice uses sale prices, not market', () => {
+  assert.equal(getMinPrice(product), 23000);
+});
+
+test('getPrices / getMarketPrices are defensive on bad input', () => {
+  assert.deepEqual(getPrices({}), {});
+  assert.deepEqual(getMarketPrices({ marketPrices: null }), {});
+  assert.deepEqual(getPrices({ prices: [] }), {});
+});
+
+test('priceMatrixIssues checks marketPrices when asked', () => {
+  const bad = { ...product, marketPrices: { ...product.marketPrices, 'Люкс': { '80x200': 0, '200x200': 65000 } } };
+  assert.deepEqual(priceMatrixIssues(bad, 'marketPrices'), [{ fabric: 'Люкс', size: '80x200' }]);
+  assert.deepEqual(priceMatrixIssues(bad, 'prices'), []);
 });
