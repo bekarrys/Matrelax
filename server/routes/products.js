@@ -12,7 +12,7 @@ const adminOnly = [verifyToken, requireRole('admin')];
 const ALLOWED_FIELDS = [
   'name', 'series', 'category', 'descriptionLong',
   'specs', 'sizes', 'fabricOptions', 'extra10cm', 'surcharge10cm', 'image',
-  'isActive',
+  'isActive', 'prices', 'composition', 'inStock', 'imageUrl',
 ];
 
 const DEFAULT_SERIES = 'Базовая коллекция';
@@ -38,6 +38,31 @@ function validateProductTypes(fields) {
   }
   if (fields.fabricOptions !== undefined && !Array.isArray(fields.fabricOptions)) {
     return 'Ткани должны быть массивом';
+  }
+  return null;
+}
+
+// Каждая ячейка ткань×размер должна быть положительным числом — иначе товар
+// с ценой 0/null уедет на витрину. Проверяем только если матрица передана.
+function validatePriceMatrix(fields) {
+  if (fields.prices === undefined) return null;
+  if (typeof fields.prices !== 'object' || fields.prices === null || Array.isArray(fields.prices)) {
+    return 'Матрица цен должна быть объектом';
+  }
+  const fabrics = fields.fabricOptions;
+  const sizes = fields.sizes;
+  if (!Array.isArray(fabrics) || fabrics.length === 0) return 'Не заданы ткани для матрицы цен';
+  if (!Array.isArray(sizes) || sizes.length === 0) return 'Не заданы размеры для матрицы цен';
+  for (const fabric of fabrics) {
+    const row = fields.prices[fabric];
+    if (!row || typeof row !== 'object') return `Нет цен для ткани «${fabric}»`;
+    for (const s of sizes) {
+      const key = `${s.width}x${s.height}`;
+      const v = row[key];
+      if (typeof v !== 'number' || v <= 0) {
+        return `Не заполнена цена: ткань «${fabric}», размер ${key}`;
+      }
+    }
   }
   return null;
 }
@@ -90,6 +115,9 @@ router.post('/', ...adminOnly, async (req, res) => {
     const typeError = validateProductTypes(fields);
     if (typeError) return res.status(400).json({ error: typeError });
 
+    const priceError = validatePriceMatrix(fields);
+    if (priceError) return res.status(400).json({ error: priceError });
+
     // Дефолты, чтобы новые записи всегда имели серию и флаг активности
     if (fields.series === undefined) fields.series = DEFAULT_SERIES;
     if (fields.isActive === undefined) fields.isActive = true;
@@ -118,6 +146,9 @@ router.put('/:id', ...adminOnly, async (req, res) => {
     }
     const typeError = validateProductTypes(fields);
     if (typeError) return res.status(400).json({ error: typeError });
+
+    const priceError = validatePriceMatrix(fields);
+    if (priceError) return res.status(400).json({ error: priceError });
 
     const updated = { ...fields, updatedAt: new Date().toISOString() };
     await ref.update(updated);
