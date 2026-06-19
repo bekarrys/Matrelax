@@ -24,6 +24,7 @@ import AdminRoute from './components/AdminRoute/AdminRoute';
 import AdminDashboard from './pages/AdminDashboard/AdminDashboard';
 import ProductEditor from './pages/ProductEditor/ProductEditor';
 import ProductList from './pages/ProductList/ProductList';
+import ProfitAnalysis from './pages/ProfitAnalysis/ProfitAnalysis';
 
 // Экран исполнителя
 import Executor from './pages/Executor/Executor';
@@ -98,6 +99,7 @@ export default function App() {
         <Route path="/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
         <Route path="/products" element={<StaffRoute><AdminRoute><ProductList /></AdminRoute></StaffRoute>} />
         <Route path="/products/edit/:id" element={<StaffRoute><AdminRoute><ProductEditor /></AdminRoute></StaffRoute>} />
+        <Route path="/admin/profit-analysis" element={<StaffRoute><AdminRoute><ProfitAnalysis /></AdminRoute></StaffRoute>} />
 
         {/* Любой другой путь → корень (витрина/логин) */}
         <Route path="*" element={<Navigate to="/" replace />} />
