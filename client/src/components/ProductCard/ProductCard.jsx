@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getMinPrice } from '../../utils/pricing';
 import './ProductCard.css';
 
 function formatPrice(price) {
@@ -8,7 +9,7 @@ function formatPrice(price) {
 
 export default function ProductCard({ product, index }) {
   const navigate = useNavigate();
-  const minPrice = product.sizes ? Math.min(...product.sizes.map((s) => s.price)) : 0;
+  const minPrice = getMinPrice(product);
 
   return (
     <div

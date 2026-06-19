@@ -3,7 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../api';
 import { useCartStore } from '../../store/cartStore';
 import BottomSheet from '../../components/BottomSheet/BottomSheet';
+import { getPrice, sizeKey } from '../../utils/pricing';
 import './ProductDetail.css';
+
+const SPEC_LABELS = {
+  type: 'тип', firmness: 'жёсткость', hardness: 'жёсткость',
+  height: 'высота', load: 'нагрузка', warranty: 'гарантия', serviceLife: 'срок службы',
+};
 
 function formatPrice(price) {
   return new Intl.NumberFormat('ru-KZ').format(price) + ' ₸';
@@ -71,9 +77,9 @@ export default function ProductDetail() {
     );
   }
 
-  const currentPrice = selectedSize
-    ? selectedSize.price + (extra10cm ? product.surcharge10cm : 0)
-    : 0;
+  const key = selectedSize ? sizeKey(selectedSize.width, selectedSize.height) : null;
+  const basePrice = selectedFabric && key ? getPrice(product, selectedFabric, key) : 0;
+  const currentPrice = basePrice + (extra10cm && basePrice ? product.surcharge10cm : 0);
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
@@ -116,11 +122,9 @@ export default function ProductDetail() {
 
           {product.specs && (
             <div className="pd-specs">
-              {Object.entries(product.specs).map(([key, val]) => (
-                <div key={key} className="pd-spec-tile">
-                  <span className="pd-spec-label">
-                    {key === 'hardness' ? 'жёсткость' : key === 'height' ? 'высота' : 'гарантия'}
-                  </span>
+              {Object.entries(product.specs).map(([specKey, val]) => (
+                <div key={specKey} className="pd-spec-tile">
+                  <span className="pd-spec-label">{SPEC_LABELS[specKey] || specKey}</span>
                   <span className="pd-spec-val">{val}</span>
                 </div>
               ))}
@@ -131,6 +135,11 @@ export default function ProductDetail() {
             подробнее {showDesc ? '↑' : '↓'}
           </button>
           {showDesc && <p className="pd-desc-long">{product.descriptionLong}</p>}
+          {showDesc && product.composition?.length > 0 && (
+            <ul className="pd-composition">
+              {product.composition.map((c, i) => <li key={i}>{c}</li>)}
+            </ul>
+          )}
 
           <div className="pd-section">
             <div className="pd-section-title">размер</div>

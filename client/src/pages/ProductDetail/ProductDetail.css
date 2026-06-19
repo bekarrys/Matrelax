@@ -127,6 +127,14 @@
   margin-bottom: 16px;
 }
 
+.pd-composition {
+  margin: 0 0 16px;
+  padding-left: 18px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
 /* Section */
 .pd-section {
   margin-bottom: 20px;
