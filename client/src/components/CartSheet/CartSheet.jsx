@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../store/cartStore';
 import { api } from '../../api';
+import { getMinPrice, getPrice, getMarketPrice, sizeKey } from '../../utils/pricing';
 import './CartSheet.css';
 
 function formatPrice(price) {
@@ -9,9 +10,7 @@ function formatPrice(price) {
 }
 
 function UpsellCard({ product, onAdd }) {
-  const minPrice = product.sizes?.length
-    ? Math.min(...product.sizes.map((s) => s.price))
-    : 0;
+  const minPrice = getMinPrice(product);
 
   return (
     <div className="cs-upsell-card">
@@ -54,14 +53,18 @@ export default function CartSheet() {
   const handleUpsellAdd = (product) => {
     if (!product.sizes?.length) return;
     const size = product.sizes[0];
+    const fabric = product.fabricOptions?.[0] ?? null;
+    const key = sizeKey(size.width, size.height);
+    const market = getMarketPrice(product, fabric, key);
     addItem({
       productId: product.id,
       name: product.name,
       series: product.series,
       size: `${size.width}×${size.height}`,
-      fabric: product.fabricOptions?.[0] ?? null,
+      fabric,
       extra10cm: false,
-      price: size.price,
+      price: getPrice(product, fabric, key),
+      marketPrice: market || null,
     });
   };
 

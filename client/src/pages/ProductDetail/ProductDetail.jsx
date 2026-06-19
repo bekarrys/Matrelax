@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../api';
 import { useCartStore } from '../../store/cartStore';
 import BottomSheet from '../../components/BottomSheet/BottomSheet';
-import { getPrice, sizeKey } from '../../utils/pricing';
+import { getPrice, getMarketPrice, sizeKey } from '../../utils/pricing';
 import './ProductDetail.css';
 
 const SPEC_LABELS = {
@@ -81,6 +81,11 @@ export default function ProductDetail() {
   const basePrice = selectedFabric && key ? getPrice(product, selectedFabric, key) : 0;
   const currentPrice = basePrice + (extra10cm && basePrice ? product.surcharge10cm : 0);
 
+  const marketBase = selectedFabric && key ? getMarketPrice(product, selectedFabric, key) : 0;
+  const marketPrice = marketBase
+    ? marketBase + (extra10cm ? product.surcharge10cm : 0)
+    : null;
+
   const handleAddToCart = () => {
     if (!selectedSize) return;
     addItem({
@@ -91,6 +96,7 @@ export default function ProductDetail() {
       fabric: selectedFabric,
       extra10cm,
       price: currentPrice,
+      marketPrice,
     });
     setAdded(true);
     setTimeout(() => { navigate('/'); openCart(); }, 400);
