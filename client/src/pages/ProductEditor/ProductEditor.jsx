@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../utils/api';
 import { ArrowLeft, Save, Plus, Trash2, Loader2 } from 'lucide-react';
-import { getPrice, priceMatrixIssues, sizeKey } from '../../utils/pricing';
+import { getPrice, getMarketPrice, priceMatrixIssues, sizeKey } from '../../utils/pricing';
 import './ProductEditor.css';
 
 const EMPTY_SIZE = { width: '', height: 200 };
+const MARKET_MARKUP = 7000;
 
 export default function ProductEditor() {
   const { id } = useParams();
@@ -14,6 +15,7 @@ export default function ProductEditor() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [priceTab, setPriceTab] = useState('prices'); // 'prices' | 'marketPrices'
 
   useEffect(() => {
     api.products.get(id)
@@ -37,24 +39,43 @@ export default function ProductEditor() {
   const removeSize = (idx) =>
     setProduct((p) => ({ ...p, sizes: (p.sizes || []).filter((_, i) => i !== idx) }));
 
-  // Цена ячейки матрицы prices[ткань][размер]
-  const setCell = (fabric, key, value) =>
+  // Ячейка матрицы field[ткань][размер] (field = 'prices' | 'marketPrices')
+  const setCell = (field, fabric, key, value) =>
     setProduct((p) => ({
       ...p,
-      prices: {
-        ...(p.prices || {}),
-        [fabric]: { ...((p.prices || {})[fabric] || {}), [key]: Number(value) },
+      [field]: {
+        ...(p[field] || {}),
+        [fabric]: { ...((p[field] || {})[fabric] || {}), [key]: Number(value) },
       },
     }));
+
+  // Автозаполнение: Рыночная = Реальная + 7000 по каждой ячейке.
+  const autofillMarket = () =>
+    setProduct((p) => {
+      const market = {};
+      for (const fabric of p.fabricOptions || []) {
+        market[fabric] = {};
+        for (const s of p.sizes || []) {
+          const key = `${s.width}x${s.height}`;
+          const sale = p.prices?.[fabric]?.[key];
+          if (typeof sale === 'number' && sale > 0) market[fabric][key] = sale + MARKET_MARKUP;
+        }
+      }
+      return { ...p, marketPrices: market };
+    });
 
   const handleSave = async () => {
     if (!product.name?.trim()) {
       setError('Название товара обязательно');
       return;
     }
-    if (product.isActive !== false && priceMatrixIssues(product).length > 0) {
-      setError('Заполните все цены в таблице перед сохранением активного товара');
-      return;
+    if (product.isActive !== false) {
+      const saleBad = priceMatrixIssues(product, 'prices').length;
+      const marketBad = priceMatrixIssues(product, 'marketPrices').length;
+      if (saleBad || marketBad) {
+        setError('Заполните обе таблицы цен (продажи и рыночные) перед сохранением активного товара');
+        return;
+      }
     }
     setSaving(true);
     setError('');
@@ -80,7 +101,11 @@ export default function ProductEditor() {
     );
   }
 
-  const issues = product ? priceMatrixIssues(product) : [];
+  const cellValue = (fabric, key) =>
+    priceTab === 'marketPrices' ? getMarketPrice(product, fabric, key) : getPrice(product, fabric, key);
+  const issues = priceMatrixIssues(product, priceTab);
+  const saleIssuesCount = priceMatrixIssues(product, 'prices').length;
+  const marketIssuesCount = priceMatrixIssues(product, 'marketPrices').length;
 
   return (
     <div className="product-editor">
@@ -193,9 +218,32 @@ export default function ProductEditor() {
         ))}
       </div>
 
-      {/* Цены: ткань × размер */}
+      {/* Цены: вкладки «Цены продажи» / «Рыночные цены» */}
       <div className="pe-card">
-        <h3>Цены (ткань × размер)</h3>
+        <div className="pe-card-head">
+          <h3>Цены (ткань × размер)</h3>
+          {priceTab === 'marketPrices' && (
+            <button className="btn-secondary btn-sm" onClick={autofillMarket} title="Скопировать цены продажи + 7000">
+              Рыночная = Реальная + 7000
+            </button>
+          )}
+        </div>
+
+        <div className="pe-tabs">
+          <button
+            className={`pe-tab ${priceTab === 'prices' ? 'pe-tab--active' : ''}`}
+            onClick={() => setPriceTab('prices')}
+          >
+            Цены продажи{saleIssuesCount > 0 ? ` (${saleIssuesCount})` : ''}
+          </button>
+          <button
+            className={`pe-tab ${priceTab === 'marketPrices' ? 'pe-tab--active' : ''}`}
+            onClick={() => setPriceTab('marketPrices')}
+          >
+            Рыночные цены{marketIssuesCount > 0 ? ` (${marketIssuesCount})` : ''}
+          </button>
+        </div>
+
         {(product.fabricOptions || []).length === 0 && <p className="pe-muted">Сначала задайте ткани выше</p>}
         {(product.sizes || []).length === 0 && <p className="pe-muted">Сначала задайте размеры</p>}
         {(product.fabricOptions || []).length > 0 && (product.sizes || []).length > 0 && (
@@ -221,8 +269,8 @@ export default function ProductEditor() {
                           <input
                             type="number"
                             className={bad ? 'pe-cell-bad' : ''}
-                            value={getPrice(product, fabric, key) || ''}
-                            onChange={(e) => setCell(fabric, key, e.target.value)}
+                            value={cellValue(fabric, key) || ''}
+                            onChange={(e) => setCell(priceTab, fabric, key, e.target.value)}
                           />
                         </td>
                       );
@@ -235,7 +283,8 @@ export default function ProductEditor() {
         )}
         {issues.length > 0 && (
           <p className="pe-error">
-            Заполните все цены ({issues.length} пустых ячеек) — товар нельзя сохранить активным.
+            {priceTab === 'marketPrices' ? 'Рыночные цены' : 'Цены продажи'}: заполните все ячейки
+            ({issues.length} пустых) — товар нельзя сохранить активным.
           </p>
         )}
       </div>

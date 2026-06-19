@@ -165,6 +165,22 @@
   font-size: 0.85rem;
 }
 
+.pe-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.pe-tab {
+  padding: 6px 14px;
+  border: 1px solid var(--border, #2a2a2a);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary, #aaa);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.pe-tab--active {
+  background: var(--accent, #e94560);
+  border-color: var(--accent, #e94560);
+  color: #fff;
+}
+
 .pe-grid-scroll { overflow-x: auto; }
 .pe-price-grid { border-collapse: collapse; width: 100%; }
 .pe-price-grid th,
