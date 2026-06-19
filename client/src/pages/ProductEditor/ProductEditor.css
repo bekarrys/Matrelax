@@ -164,3 +164,15 @@
   color: var(--text-tertiary);
   font-size: 0.85rem;
 }
+
+.pe-grid-scroll { overflow-x: auto; }
+.pe-price-grid { border-collapse: collapse; width: 100%; }
+.pe-price-grid th,
+.pe-price-grid td {
+  border: 1px solid var(--border, #2a2a2a);
+  padding: 4px;
+  text-align: center;
+}
+.pe-price-grid input { width: 84px; }
+.pe-grid-rowlabel { white-space: nowrap; font-weight: 600; }
+.pe-cell-bad { outline: 2px solid #e94560; }

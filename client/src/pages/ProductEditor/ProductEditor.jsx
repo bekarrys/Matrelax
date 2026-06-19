@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../utils/api';
 import { ArrowLeft, Save, Plus, Trash2, Loader2 } from 'lucide-react';
+import { getPrice, priceMatrixIssues, sizeKey } from '../../utils/pricing';
 import './ProductEditor.css';
 
-const EMPTY_SIZE = { width: '', height: 200, price: '' };
+const EMPTY_SIZE = { width: '', height: 200 };
 
 export default function ProductEditor() {
   const { id } = useParams();
@@ -36,9 +37,23 @@ export default function ProductEditor() {
   const removeSize = (idx) =>
     setProduct((p) => ({ ...p, sizes: (p.sizes || []).filter((_, i) => i !== idx) }));
 
+  // Цена ячейки матрицы prices[ткань][размер]
+  const setCell = (fabric, key, value) =>
+    setProduct((p) => ({
+      ...p,
+      prices: {
+        ...(p.prices || {}),
+        [fabric]: { ...((p.prices || {})[fabric] || {}), [key]: Number(value) },
+      },
+    }));
+
   const handleSave = async () => {
     if (!product.name?.trim()) {
       setError('Название товара обязательно');
+      return;
+    }
+    if (product.isActive !== false && priceMatrixIssues(product).length > 0) {
+      setError('Заполните все цены в таблице перед сохранением активного товара');
       return;
     }
     setSaving(true);
@@ -64,6 +79,8 @@ export default function ProductEditor() {
       </div>
     );
   }
+
+  const issues = product ? priceMatrixIssues(product) : [];
 
   return (
     <div className="product-editor">
@@ -152,10 +169,10 @@ export default function ProductEditor() {
         </div>
       </div>
 
-      {/* Размеры и цены */}
+      {/* Размеры */}
       <div className="pe-card">
         <div className="pe-card-head">
-          <h3>Размеры и цены</h3>
+          <h3>Размеры</h3>
           <button className="btn-secondary btn-sm" onClick={addSize}>
             <Plus size={14} /> Добавить размер
           </button>
@@ -169,14 +186,58 @@ export default function ProductEditor() {
             <Field label="Длина">
               <input type="number" value={size.height} onChange={(e) => setSize(idx, 'height', e.target.value)} />
             </Field>
-            <Field label="Цена (KZT)">
-              <input type="number" value={size.price} onChange={(e) => setSize(idx, 'price', e.target.value)} />
-            </Field>
             <button className="btn-icon-danger" onClick={() => removeSize(idx)} title="Удалить размер">
               <Trash2 size={16} />
             </button>
           </div>
         ))}
+      </div>
+
+      {/* Цены: ткань × размер */}
+      <div className="pe-card">
+        <h3>Цены (ткань × размер)</h3>
+        {(product.fabricOptions || []).length === 0 && <p className="pe-muted">Сначала задайте ткани выше</p>}
+        {(product.sizes || []).length === 0 && <p className="pe-muted">Сначала задайте размеры</p>}
+        {(product.fabricOptions || []).length > 0 && (product.sizes || []).length > 0 && (
+          <div className="pe-grid-scroll">
+            <table className="pe-price-grid">
+              <thead>
+                <tr>
+                  <th>Ткань \ Размер</th>
+                  {(product.sizes || []).map((s) => (
+                    <th key={`${s.width}x${s.height}`}>{s.width}×{s.height}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(product.fabricOptions || []).map((fabric) => (
+                  <tr key={fabric}>
+                    <td className="pe-grid-rowlabel">{fabric}</td>
+                    {(product.sizes || []).map((s) => {
+                      const key = sizeKey(s.width, s.height);
+                      const bad = issues.some((i) => i.fabric === fabric && i.size === key);
+                      return (
+                        <td key={key}>
+                          <input
+                            type="number"
+                            className={bad ? 'pe-cell-bad' : ''}
+                            value={getPrice(product, fabric, key) || ''}
+                            onChange={(e) => setCell(fabric, key, e.target.value)}
+                          />
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {issues.length > 0 && (
+          <p className="pe-error">
+            Заполните все цены ({issues.length} пустых ячеек) — товар нельзя сохранить активным.
+          </p>
+        )}
       </div>
     </div>
   );
