@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { getMinPrice, getPrice, getMarketPrice, getPrices, getMarketPrices, priceMatrixIssues } from './pricing.js';
+import { getMinPrice, getPrice, getMarketPrice, getPrices, getMarketPrices, priceMatrixIssues, orderItemPrice } from './pricing.js';
 
 const product = {
   fabricOptions: ['Стандарт', 'Люкс'],
@@ -53,6 +53,21 @@ test('getPrices / getMarketPrices are defensive on bad input', () => {
   assert.deepEqual(getPrices({}), {});
   assert.deepEqual(getMarketPrices({ marketPrices: null }), {});
   assert.deepEqual(getPrices({ prices: [] }), {});
+});
+
+test('orderItemPrice without +10см', () => {
+  const p = { ...product, surcharge10cm: 7000 };
+  assert.deepEqual(orderItemPrice(p, 'Стандарт', '80x200', false), { price: 23000, marketPrice: 30000 });
+});
+
+test('orderItemPrice with +10см folds surcharge into both', () => {
+  const p = { ...product, surcharge10cm: 7000 };
+  assert.deepEqual(orderItemPrice(p, 'Люкс', '200x200', true), { price: 65000, marketPrice: 72000 });
+});
+
+test('orderItemPrice on missing cell returns zeros', () => {
+  const p = { ...product, surcharge10cm: 7000 };
+  assert.deepEqual(orderItemPrice(p, 'Люкс', '999x999', true), { price: 0, marketPrice: 0 });
 });
 
 test('priceMatrixIssues checks marketPrices when asked', () => {

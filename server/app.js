@@ -19,7 +19,6 @@ app.use('/api/admin-orders', require('./routes/adminOrders'));
 app.use('/api/analytics',    require('./routes/analytics'));
 app.use('/api/employees',    verifyToken, requireRole('admin', 'manager'), require('./routes/employees'));
 app.use('/api/reports',      verifyToken, requireRole('admin', 'manager'), require('./routes/reports'));
-app.use('/api/catalog',      verifyToken, requireRole('admin', 'manager'), require('./routes/catalog'));
 
 app.get('/api/health', (_req, res) =>
   res.json({ status: 'ok', timestamp: new Date().toISOString(), db: 'firestore' })

@@ -46,6 +46,19 @@ export function getMinPrice(product) {
   return legacy.length ? Math.min(...legacy) : 0;
 }
 
+// Пересчёт позиции заказа из живого каталога. Наценка +10см складывается
+// внутрь цены (конвенция витрины: surcharge хранится отдельно как 0).
+// Возвращает { price, marketPrice } — обе с учётом +10см.
+export function orderItemPrice(product, fabric, size, extra10cm) {
+  const surcharge = extra10cm ? (Number(product?.surcharge10cm) || 0) : 0;
+  const base = getPrice(product, fabric, size);
+  const marketBase = getMarketPrice(product, fabric, size);
+  return {
+    price: base ? base + surcharge : 0,
+    marketPrice: marketBase ? marketBase + surcharge : 0,
+  };
+}
+
 // Returns [{fabric, size}] for every expected cell that is missing or <= 0.
 // `field` selects which matrix to check: 'prices' (default) or 'marketPrices'.
 export function priceMatrixIssues(product, field = 'prices') {

@@ -37,11 +37,6 @@ async function run() {
   const prodData = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'products.json'), 'utf-8'));
   await importCollection('products', prodData.products);
 
-  // --- catalog/prices ---
-  const catalogData = JSON.parse(fs.readFileSync(path.join(DATA_DIR, 'catalog', 'prices.json'), 'utf-8'));
-  const catalogDocs = Object.entries(catalogData.models || {}).map(([id, val]) => ({ id, ...val }));
-  if (catalogDocs.length > 0) await importCollection('catalog', catalogDocs);
-
   console.log('\n✅ Миграция завершена');
   process.exit(0);
 }

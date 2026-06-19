@@ -10,6 +10,7 @@ import {
 import StatusBadge from '../../components/StatusBadge/StatusBadge';
 import Receipt from '../../components/Receipt/Receipt';
 import { ArrowLeft, Save, X, Trash2, Lock, Unlock, Receipt as ReceiptIcon, ChevronRight } from 'lucide-react';
+import { orderItemPrice, sizeKey } from '../../utils/pricing';
 import './OrderDetails.css';
 
 function recomputeTotals(f) {
@@ -47,7 +48,7 @@ export default function OrderDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
-  const [catalog, setCatalog] = useState(null);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
@@ -60,8 +61,10 @@ export default function OrderDetails() {
 
   useEffect(() => {
     fetchOrder();
-    api.catalog.get().then(setCatalog).catch(() => {});
+    api.products.list().then((list) => setProducts(list || [])).catch(() => {});
   }, [id]);
+
+  const findProduct = (modelId) => products.find((p) => p.id === modelId) || null;
 
   async function fetchOrder() {
     try {
@@ -95,18 +98,32 @@ export default function OrderDetails() {
     }
   }
 
-  function updateItem(idx, fields) {
-    const items = form.items.map((it, i) => (i === idx ? { ...it, ...fields } : it));
-    updateForm({ items });
+  // Меняет поля позиции и пересчитывает price/marketPrice из живого каталога.
+  // Конвенция витрины: наценка +10см внутри price, surcharge = 0.
+  function setItemField(idx, fields) {
+    setForm((p) => {
+      const items = p.items.map((it, i) => {
+        if (i !== idx) return it;
+        const merged = { ...it, ...fields };
+        const product = products.find((pr) => pr.id === merged.modelId);
+        if (product && merged.fabric && merged.size) {
+          const key = String(merged.size).replace('×', 'x');
+          const { price, marketPrice } = orderItemPrice(product, merged.fabric, key, merged.extra10cm);
+          return { ...merged, price, marketPrice, surcharge: 0 };
+        }
+        return merged;
+      });
+      return { ...p, items };
+    });
   }
 
-  async function recalcItem(idx) {
-    const item = form.items[idx];
-    if (!item.modelId || !item.size) return;
-    try {
-      const r = await api.catalog.calculate({ modelId: item.modelId, size: item.size, extra10cm: item.extra10cm });
-      updateItem(idx, { price: r.basePrice, surcharge: r.surcharge });
-    } catch { /* ignore */ }
+  // Смена модели: подставляем название, первую ткань и первый размер по умолчанию.
+  function changeItemModel(idx, modelId) {
+    const product = findProduct(modelId);
+    const fabric = product?.fabricOptions?.[0] ?? '';
+    const first = product?.sizes?.[0];
+    const size = first ? `${first.width}×${first.height}` : '';
+    setItemField(idx, { modelId, name: product?.name || modelId, fabric, size });
   }
 
   async function handleAdvanceStatus() {
@@ -242,27 +259,37 @@ export default function OrderDetails() {
             {(src.items || []).map((item, idx) => {
               const editable = editMode && itemsEditable;
               if (editable) {
+                const product = findProduct(item.modelId);
+                const isLegacy = !!item.modelId && !product;
                 return (
                   <div key={idx} className="detail-item edit">
-                    <select value={item.modelId || ''} onChange={(e) => updateItem(idx, { modelId: e.target.value, size: '', price: 0 })}>
+                    <select value={isLegacy ? '__legacy__' : (item.modelId || '')} onChange={(e) => changeItemModel(idx, e.target.value)}>
                       <option value="">Модель</option>
-                      {catalog && Object.entries(catalog.models).map(([mid, m]) => (
-                        <option key={mid} value={mid}>{m.name}</option>
+                      {isLegacy && <option value="__legacy__" disabled>(старая модель: {item.name || item.modelId})</option>}
+                      {products.map((p) => (
+                        <option key={p.id} value={p.id}>{p.name}</option>
                       ))}
                     </select>
-                    <select value={item.size || ''} onChange={(e) => updateItem(idx, { size: e.target.value })} onBlur={() => recalcItem(idx)}>
-                      <option value="">Размер</option>
-                      {catalog?.sizes.map((s) => <option key={s} value={s}>{s}</option>)}
+                    <select value={item.fabric || ''} onChange={(e) => setItemField(idx, { fabric: e.target.value })} disabled={!product}>
+                      <option value="">Ткань</option>
+                      {(product?.fabricOptions || []).map((f) => <option key={f} value={f}>{f}</option>)}
                     </select>
-                    <select value={item.extra10cm ? 'yes' : 'no'} onChange={(e) => updateItem(idx, { extra10cm: e.target.value === 'yes' })} onBlur={() => recalcItem(idx)}>
+                    <select value={item.size || ''} onChange={(e) => setItemField(idx, { size: e.target.value })} disabled={!product}>
+                      <option value="">Размер</option>
+                      {(product?.sizes || []).map((s) => {
+                        const label = `${s.width}×${s.height}`;
+                        return <option key={label} value={label}>{label}</option>;
+                      })}
+                    </select>
+                    <select value={item.extra10cm ? 'yes' : 'no'} onChange={(e) => setItemField(idx, { extra10cm: e.target.value === 'yes' })} disabled={!product}>
                       <option value="no">−10см</option>
                       <option value="yes">+10см</option>
                     </select>
-                    <input type="number" min="1" value={item.quantity || 1} onChange={(e) => updateItem(idx, { quantity: Math.max(1, Number(e.target.value)) })} />
+                    <input type="number" min="1" value={item.quantity || 1} onChange={(e) => setItemField(idx, { quantity: Math.max(1, Number(e.target.value)) })} />
                   </div>
                 );
               }
-              const modelName = item.name || catalog?.models[item.modelId]?.name || item.modelId;
+              const modelName = item.name || findProduct(item.modelId)?.name || item.modelId;
               const unit = (item.price || 0) + (item.surcharge || 0);
               return (
                 <div key={idx} className="detail-item">
