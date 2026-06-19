@@ -1,6 +1,14 @@
-// Чистая логика анализа маржи. Без React — тестируется node:test.
-// Маржа = Рыночная цена (снапшот на момент продажи) − Цена продажи.
-// «Потерянная прибыль при скидках»: насколько ниже рынка продали.
+// Чистая логика анализа дохода. Без React — тестируется node:test.
+//
+// Бизнес-формула (утверждена):
+//   MarketPrice — рыночная цена (снапшот из заказа, поле item.marketPrice).
+//   RealPrice   = MarketPrice − MARKET_MARKUP (реальная/базовая цена).
+//   SalePrice   — фактическая цена продажи в заказе (снапшот, item.price).
+//   Доход       = SalePrice − RealPrice.
+// Расчёт ведётся по marketPrice, сохранённому в момент оформления, поэтому
+// старые отчёты не меняются при обновлении цен в каталоге.
+
+export const MARKET_MARKUP = 7000;
 
 function num(v) {
   return typeof v === 'number' && Number.isFinite(v) ? v : null;
@@ -15,7 +23,8 @@ export function orderProfitRows(orders = []) {
       const sale = num(item.price) ?? 0;
       const market = num(item.marketPrice); // null если снапшота нет (старые заказы)
       const hasMarket = market !== null;
-      const margin = hasMarket ? market - sale : null;
+      const realPrice = hasMarket ? market - MARKET_MARKUP : null;
+      const income = hasMarket ? sale - realPrice : null;
       rows.push({
         orderId: order.id,
         orderNumber: order.orderNumber || order.id,
@@ -26,10 +35,11 @@ export function orderProfitRows(orders = []) {
         quantity: qty,
         sale,
         market,
+        realPrice,
+        income,
         hasMarket,
-        margin,
         lineRevenue: sale * qty,
-        lineMargin: hasMarket ? margin * qty : 0,
+        lineIncome: hasMarket ? income * qty : 0,
       });
     }
   }
@@ -38,14 +48,14 @@ export function orderProfitRows(orders = []) {
 
 export function profitTotals(rows = []) {
   let revenue = 0;
-  let margin = 0;
+  let income = 0;
   let lossCount = 0;
   for (const r of rows) {
     revenue += r.lineRevenue;
     if (r.hasMarket) {
-      margin += r.lineMargin;
-      if (r.margin < 0) lossCount += 1;
+      income += r.lineIncome;
+      if (r.income <= 0) lossCount += 1;
     }
   }
-  return { revenue, margin, lossCount };
+  return { revenue, income, lossCount };
 }

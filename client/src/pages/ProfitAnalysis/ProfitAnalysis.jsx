@@ -28,8 +28,8 @@ export default function ProfitAnalysis() {
     <div className="profit-page">
       <div className="page-header">
         <div className="page-header-info">
-          <h1>Анализ маржи</h1>
-          <span className="pa-sub">Маржа = Рыночная цена − Цена продажи (потерянная прибыль при скидках)</span>
+          <h1>Анализ дохода</h1>
+          <span className="pa-sub">Доход = Цена продажи − Реальная цена (Реальная = Рыночная − 7000)</span>
         </div>
       </div>
 
@@ -42,11 +42,11 @@ export default function ProfitAnalysis() {
           <span className="pa-total-val">{formatPrice(totals.revenue)}</span>
         </div>
         <div className="pa-total-card">
-          <span className="pa-total-label">Общая маржа</span>
-          <span className={`pa-total-val ${totals.margin < 0 ? 'pa-neg' : ''}`}>{formatPrice(totals.margin)}</span>
+          <span className="pa-total-label">Общий доход</span>
+          <span className={`pa-total-val ${totals.income <= 0 ? 'pa-neg' : ''}`}>{formatPrice(totals.income)}</span>
         </div>
         <div className="pa-total-card">
-          <span className="pa-total-label">Продаж ниже рынка</span>
+          <span className="pa-total-label">Убыточных позиций</span>
           <span className={`pa-total-val ${totals.lossCount > 0 ? 'pa-neg' : ''}`}>
             <TrendingDown size={16} /> {totals.lossCount}
           </span>
@@ -68,13 +68,13 @@ export default function ProfitAnalysis() {
                 <th>Ткань</th>
                 <th>Кол-во</th>
                 <th>Цена продажи</th>
-                <th>Рыночная</th>
-                <th>Маржа</th>
+                <th>Реальная цена</th>
+                <th>Доход</th>
               </tr>
             </thead>
             <tbody>
               {rows.map((r, i) => (
-                <tr key={`${r.orderId}-${i}`} className={r.hasMarket && r.margin < 0 ? 'pa-row-loss' : ''}>
+                <tr key={`${r.orderId}-${i}`} className={r.hasMarket && r.income <= 0 ? 'pa-row-loss' : ''}>
                   <td>{r.orderNumber}</td>
                   <td>{r.date ? formatDate(r.date) : '—'}</td>
                   <td>{r.name}</td>
@@ -82,9 +82,9 @@ export default function ProfitAnalysis() {
                   <td>{r.fabric || '—'}</td>
                   <td>{r.quantity}</td>
                   <td>{formatPrice(r.sale)}</td>
-                  <td>{r.hasMarket ? formatPrice(r.market) : '—'}</td>
-                  <td className={r.hasMarket && r.margin < 0 ? 'pa-neg' : ''}>
-                    {r.hasMarket ? formatPrice(r.margin) : '—'}
+                  <td>{r.hasMarket ? formatPrice(r.realPrice) : '—'}</td>
+                  <td className={r.hasMarket && r.income <= 0 ? 'pa-neg' : ''}>
+                    {r.hasMarket ? formatPrice(r.income) : '—'}
                   </td>
                 </tr>
               ))}
