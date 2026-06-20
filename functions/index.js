@@ -11,7 +11,7 @@ setGlobalOptions({ region: 'asia-southeast1', maxInstances: 10 });
 // Задать: firebase functions:secrets:set WORKSHOP_PIN  (и FIREBASE_WEB_API_KEY)
 exports.api = onRequest(
   {
-    secrets: ['WORKSHOP_PIN', 'FIREBASE_WEB_API_KEY'],
+    secrets: ['WORKSHOP_PIN', 'WEB_API_KEY'],
     timeoutSeconds: 120,   // запас на cold start (init Firebase Admin)
     memory: '512MiB',      // больше памяти → быстрее холодный старт
   },
