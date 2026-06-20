@@ -26,21 +26,6 @@
       "predeploy": [
         "node \"$PROJECT_DIR/scripts/sync-server-to-functions.js\""
       ]
-    },
-    {
-      "source": "matrelax",
-      "codebase": "matrelax",
-      "disallowLegacyRuntimeConfig": true,
-      "ignore": [
-        "node_modules",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local"
-      ],
-      "predeploy": [
-        "npm --prefix \"$RESOURCE_DIR\" run lint"
-      ]
     }
   ],
   "hosting": {
