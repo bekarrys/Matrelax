@@ -91,9 +91,9 @@ export default function App() {
         {/* Управление заказами */}
         <Route path="/orders" element={<StaffRoute><Orders /></StaffRoute>} />
         <Route path="/orders/:id" element={<StaffRoute><OrderDetails /></StaffRoute>} />
-        <Route path="/employees" element={<StaffRoute><Employees /></StaffRoute>} />
-        <Route path="/reports" element={<StaffRoute><Reports /></StaffRoute>} />
-        <Route path="/settings" element={<StaffRoute><Settings /></StaffRoute>} />
+        <Route path="/employees" element={<StaffRoute><AdminRoute><Employees /></AdminRoute></StaffRoute>} />
+        <Route path="/reports" element={<StaffRoute><AdminRoute><Reports /></AdminRoute></StaffRoute>} />
+        <Route path="/settings" element={<StaffRoute><AdminRoute><Settings /></AdminRoute></StaffRoute>} />
 
         {/* Только администратор */}
         <Route path="/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />

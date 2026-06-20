@@ -13,9 +13,9 @@ const ALL_NAV = [
   { path: '/orders',     icon: ShoppingBag,     label: 'Все заказы',  roles: ['admin', 'manager'] },
   { path: '/products',   icon: Package,         label: 'Товары',      roles: ['admin'] },
   { path: '/admin/profit-analysis', icon: TrendingUp, label: 'Доход', roles: ['admin'] },
-  { path: '/employees',  icon: Users,           label: 'Сотрудники',  roles: ['admin', 'manager'] },
-  { path: '/reports',    icon: BarChart3,       label: 'Отчёты',      roles: ['admin', 'manager'] },
-  { path: '/settings',   icon: Settings,        label: 'Настройки',   roles: ['admin', 'manager'] },
+  { path: '/employees',  icon: Users,           label: 'Сотрудники',  roles: ['admin'] },
+  { path: '/reports',    icon: BarChart3,       label: 'Отчёты',      roles: ['admin'] },
+  { path: '/settings',   icon: Settings,        label: 'Настройки',   roles: ['admin'] },
 ];
 
 function navActive(path, pathname) {
