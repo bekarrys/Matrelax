@@ -1,6 +1,9 @@
 const { onRequest } = require('firebase-functions/v2/https');
 const { setGlobalOptions } = require('firebase-functions');
-const app = require('../server/app');
+// server/ копируется сюда predeploy-хуком (scripts/sync-server-to-functions.js),
+// т.к. Firebase упаковывает только содержимое functions/. Локально хук тоже
+// можно запустить вручную: node scripts/sync-server-to-functions.js
+const app = require('./server/app');
 
 setGlobalOptions({ region: 'asia-southeast1', maxInstances: 10 });
 

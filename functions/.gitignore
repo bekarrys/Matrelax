@@ -1,2 +1,5 @@
 node_modules/
 *.local
+
+# Копия server/ — генерируется predeploy-хуком, не коммитим
+server/
