@@ -280,6 +280,7 @@ img {
   border-radius: var(--radius-full);
   padding: 16px 20px;
   font-size: clamp(var(--text-sm), 4vw, var(--text-lg));
+  line-height: var(--lh-sm);
   font-weight: 700;
   width: 100%;
   min-height: 56px;
