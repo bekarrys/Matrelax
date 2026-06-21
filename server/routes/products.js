@@ -83,9 +83,17 @@ router.get('/', async (req, res) => {
     let products = snap.docs.map((d) => d.data());
 
     // ?activeOnly=1 — публичный магазин не показывает скрытые товары (isActive === false)
-    if (req.query.activeOnly === '1' || req.query.activeOnly === 'true') {
+    const publicShop = req.query.activeOnly === '1' || req.query.activeOnly === 'true';
+    if (publicShop) {
       products = products.filter((p) => p.isActive !== false);
     }
+
+    // Публичную витрину кэшируем на CDN Firebase Hosting: каталог меняется редко,
+    // запрос отдаётся с edge без холодного старта функции. SWR обновляет в фоне.
+    // Админские запросы (без activeOnly) не кэшируем — нужна свежесть после правок.
+    res.set('Cache-Control', publicShop
+      ? 'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
+      : 'no-store');
 
     // Сортировка на бэке: сначала по серии, внутри серии — по имени.
     // Делаем в памяти, чтобы не требовать составной индекс Firestore при фильтре по category.

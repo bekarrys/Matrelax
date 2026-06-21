@@ -26,7 +26,7 @@ export default function ProductList() {
 
   const fetchProducts = async () => {
     try {
-      const data = await api.products.list();
+      const data = await api.products.listAll();
       setProducts(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);

@@ -12,9 +12,12 @@ async function request(url, options = {}) {
 
 export const api = {
   products: {
-    // Публичный магазин показывает только активные товары (activeOnly=1)
+    // Публичный магазин показывает только активные товары (activeOnly=1).
+    // Этот ответ кэшируется на CDN — каталог меняется редко.
     list: (category) =>
       request(`/products?activeOnly=1${category ? `&category=${category}` : ''}`),
+    // Админский список: все товары (вкл. скрытые), без CDN-кэша (нужна свежесть после правок).
+    listAll: () => request('/products'),
     get: (id) => request(`/products/${id}`),
   },
   orders: {
