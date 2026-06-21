@@ -82,7 +82,7 @@ const MATTRESSES = [
     ]),
   }),
   tiered({
-    id: '702', name: '702', series: 'Зима-Лето',
+    id: '702', name: '702', series: 'Зима-Лето', imageUrl: '/products/702.png',
     specs: { type: 'Ортопедический, Зима-Лето', firmness: 'Средне-Жесткий / Средне-Мягкий', height: '20-24см', load: '120кг', warranty: '1 год', serviceLife: '20 лет' },
     composition: ['Кокосовая койра', 'Орто Пена', 'Термовойлок', 'Независимые пружины'],
     ...tieredPrices([

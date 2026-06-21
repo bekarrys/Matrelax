@@ -92,6 +92,7 @@ export default function ProductDetail() {
       productId: product.id,
       name: product.name,
       series: product.series,
+      image: product.imageUrl || '',
       size: `${customW || selectedSize.width}×${customH || selectedSize.height}`,
       fabric: selectedFabric,
       extra10cm,

@@ -14,7 +14,9 @@ function UpsellCard({ product, onAdd }) {
 
   return (
     <div className="cs-upsell-card">
-      <div className="cs-upsell-card__img" />
+      <div className="cs-upsell-card__img">
+        {product.imageUrl && <img src={product.imageUrl} alt={product.name} loading="lazy" />}
+      </div>
       <div className="cs-upsell-card__body">
         <div className="cs-upsell-card__name">{product.name}</div>
         <div className="cs-upsell-card__footer">
@@ -60,6 +62,7 @@ export default function CartSheet() {
       productId: product.id,
       name: product.name,
       series: product.series,
+      image: product.imageUrl || '',
       size: `${size.width}×${size.height}`,
       fabric,
       extra10cm: false,
@@ -106,10 +109,14 @@ export default function CartSheet() {
               {items.map((item) => (
                 <div key={item.id} className="cs-item">
                   <div className="cs-item__img">
-                    <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
-                      <rect x="4" y="18" width="40" height="20" rx="4" stroke="#555" strokeWidth="2" fill="none"/>
-                      <rect x="8" y="14" width="32" height="6" rx="2" stroke="#555" strokeWidth="2" fill="none"/>
-                    </svg>
+                    {item.image ? (
+                      <img src={item.image} alt={item.name} loading="lazy" />
+                    ) : (
+                      <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+                        <rect x="4" y="18" width="40" height="20" rx="4" stroke="#555" strokeWidth="2" fill="none"/>
+                        <rect x="8" y="14" width="32" height="6" rx="2" stroke="#555" strokeWidth="2" fill="none"/>
+                      </svg>
+                    )}
                   </div>
                   <div className="cs-item__info">
                     <div className="cs-item__name">{item.name}</div>
