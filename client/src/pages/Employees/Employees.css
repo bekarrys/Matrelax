@@ -102,7 +102,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   padding: 14px;
-  background: var(--surface);
+  background: var(--surface-2);
   border-radius: var(--radius-sm);
 }
 .emp-stat { display: flex; flex-direction: column; gap: 3px; align-items: center; text-align: center; }
@@ -167,7 +167,7 @@
 }
 .form-field input {
   padding: 10px 14px;
-  background: var(--surface);
+  background: var(--surface-2);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-primary);
