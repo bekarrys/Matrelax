@@ -187,7 +187,7 @@ export default function Orders() {
               filtered.map((o) => {
                 const pay = paymentInfo(o);
                 return (
-                  <tr key={o.id} className="orders-row" onClick={() => navigate(`/orders/${o.id}`)}>
+                  <tr key={o.id} className="orders-row" onClick={() => navigate(`/orders/${o.id}`)} tabIndex={0} role="button" onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/orders/${o.id}`); } }}>
                     <td className="mono">{o.orderNumber || o.id}</td>
                     <td>{SALES_POINTS[o.salesPoint] || o.salesPoint || '—'}</td>
                     <td>{o.customerName || '—'}</td>
