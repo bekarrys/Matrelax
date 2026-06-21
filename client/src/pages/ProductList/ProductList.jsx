@@ -118,6 +118,9 @@ export default function ProductList() {
                           key={p.id}
                           className={`pl-product ${inactive ? 'pl-product--inactive' : ''}`}
                           onClick={() => navigate(`/products/edit/${p.id}`)}
+                          tabIndex={0}
+                          role="button"
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigate(`/products/edit/${p.id}`); }}
                         >
                           <div className="pl-product-main">
                             <span className="pl-product-name">{p.name}</span>
