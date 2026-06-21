@@ -5,22 +5,24 @@
 }
 
 .section-desc {
-  font-size: 0.875rem;
-  color: var(--text-muted);
+  font-size: var(--text-base);
+  line-height: var(--lh-base);
+  color: var(--text-tertiary);
   margin-top: var(--space-1);
   margin-bottom: var(--space-6);
 }
 
 /* Settings Sections */
 .settings-section {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
   padding: var(--space-6);
 }
 
 .settings-section h2 {
-  font-size: 1.125rem;
+  font-size: var(--text-xl);
+  line-height: var(--lh-xl);
   margin-bottom: var(--space-1);
 }
 
@@ -28,7 +30,7 @@
 .series-block {
   margin-bottom: var(--space-6);
   padding-bottom: var(--space-6);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border);
 }
 
 .series-block:last-child {
@@ -45,16 +47,18 @@
 }
 
 .series-header h3 {
-  font-size: 1rem;
+  font-size: var(--text-lg);
+  line-height: var(--lh-lg);
   color: var(--primary-light);
 }
 
 .surcharge-badge {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
+  line-height: var(--lh-sm);
   padding: var(--space-1) var(--space-3);
   background: var(--primary-bg);
   color: var(--primary-light);
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   font-weight: 600;
 }
 
@@ -65,14 +69,15 @@
 }
 
 .model-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   padding: var(--space-4);
 }
 
 .model-card h4 {
-  font-size: 0.875rem;
+  font-size: var(--text-base);
+  line-height: var(--lh-base);
   margin-bottom: var(--space-3);
   color: var(--text-secondary);
 }
@@ -90,14 +95,16 @@
 }
 
 .price-input-cell label {
-  font-size: 0.65rem;
-  color: var(--text-muted);
+  font-size: var(--text-xs);
+  line-height: var(--lh-sm);
+  color: var(--text-tertiary);
   text-align: center;
 }
 
 .price-input-cell input {
   padding: var(--space-2);
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
+  line-height: var(--lh-sm);
   text-align: center;
   width: 100%;
 }
@@ -113,13 +120,14 @@
   display: flex;
   justify-content: space-between;
   padding: var(--space-4);
-  background: var(--bg-secondary);
-  border-radius: var(--border-radius-sm);
-  font-size: 0.875rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-base);
+  line-height: var(--lh-base);
 }
 
 .info-item span:first-child {
-  color: var(--text-muted);
+  color: var(--text-tertiary);
 }
 
 .info-item span:last-child {
@@ -135,9 +143,9 @@
 }
 
 .integration-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   padding: var(--space-4);
   display: flex;
   flex-direction: column;
@@ -145,19 +153,22 @@
 }
 
 .integration-card h4 {
-  font-size: 0.95rem;
+  font-size: var(--text-md);
+  line-height: var(--lh-sm);
 }
 
 .integration-card p {
-  font-size: 0.8rem;
-  color: var(--text-muted);
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+  color: var(--text-tertiary);
 }
 
 .integration-status {
   display: inline-block;
   padding: var(--space-1) var(--space-3);
-  border-radius: 999px;
-  font-size: 0.7rem;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  line-height: var(--lh-sm);
   font-weight: 600;
   margin-top: var(--space-2);
   align-self: flex-start;

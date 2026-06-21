@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getMinPrice } from '../../utils/pricing';
 import './ProductCard.css';
 
 function formatPrice(price) {
@@ -8,7 +9,7 @@ function formatPrice(price) {
 
 export default function ProductCard({ product, index }) {
   const navigate = useNavigate();
-  const minPrice = product.sizes ? Math.min(...product.sizes.map((s) => s.price)) : 0;
+  const minPrice = getMinPrice(product);
 
   return (
     <div
@@ -17,7 +18,9 @@ export default function ProductCard({ product, index }) {
       onClick={() => navigate(`/product/${product.id}`)}
     >
       <div className="product-card__image">
-        <BedIcon />
+        {product.imageUrl
+          ? <img src={product.imageUrl} alt={product.name} className="product-card__img" loading="lazy" />
+          : <BedIcon />}
       </div>
       <div className="product-card__body">
         <div className="product-card__name">{product.name}</div>

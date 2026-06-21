@@ -3,7 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../api';
 import { useCartStore } from '../../store/cartStore';
 import BottomSheet from '../../components/BottomSheet/BottomSheet';
+import { getPrice, getMarketPrice, sizeKey } from '../../utils/pricing';
 import './ProductDetail.css';
+
+const SPEC_LABELS = {
+  type: 'тип', firmness: 'жёсткость', hardness: 'жёсткость',
+  height: 'высота', load: 'нагрузка', warranty: 'гарантия', serviceLife: 'срок службы',
+};
 
 function formatPrice(price) {
   return new Intl.NumberFormat('ru-KZ').format(price) + ' ₸';
@@ -25,6 +31,8 @@ export default function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState(null);
+  const [customW, setCustomW] = useState('');
+  const [customH, setCustomH] = useState('');
   const [selectedFabric, setSelectedFabric] = useState(null);
   const [extra10cm, setExtra10cm] = useState(false);
   const [showDesc, setShowDesc] = useState(false);
@@ -36,7 +44,11 @@ export default function ProductDetail() {
     api.products.get(id)
       .then((data) => {
         setProduct(data);
-        if (data.sizes?.length) setSelectedSize(data.sizes[0]);
+        if (data.sizes?.length) {
+          setSelectedSize(data.sizes[0]);
+          setCustomW(String(data.sizes[0].width));
+          setCustomH(String(data.sizes[0].height));
+        }
         if (data.fabricOptions?.length) setSelectedFabric(data.fabricOptions[0]);
       })
       .catch((err) => setError(err.message || 'Не удалось загрузить товар'))
@@ -65,9 +77,14 @@ export default function ProductDetail() {
     );
   }
 
-  const currentPrice = selectedSize
-    ? selectedSize.price + (extra10cm ? product.surcharge10cm : 0)
-    : 0;
+  const key = selectedSize ? sizeKey(selectedSize.width, selectedSize.height) : null;
+  const basePrice = selectedFabric && key ? getPrice(product, selectedFabric, key) : 0;
+  const currentPrice = basePrice + (extra10cm && basePrice ? product.surcharge10cm : 0);
+
+  const marketBase = selectedFabric && key ? getMarketPrice(product, selectedFabric, key) : 0;
+  const marketPrice = marketBase
+    ? marketBase + (extra10cm ? product.surcharge10cm : 0)
+    : null;
 
   const handleAddToCart = () => {
     if (!selectedSize) return;
@@ -75,10 +92,11 @@ export default function ProductDetail() {
       productId: product.id,
       name: product.name,
       series: product.series,
-      size: `${selectedSize.width}×${selectedSize.height}`,
+      size: `${customW || selectedSize.width}×${customH || selectedSize.height}`,
       fabric: selectedFabric,
       extra10cm,
       price: currentPrice,
+      marketPrice,
     });
     setAdded(true);
     setTimeout(() => { navigate('/'); openCart(); }, 400);
@@ -88,14 +106,18 @@ export default function ProductDetail() {
     <>
       <div className="pd-page page-enter">
         <div className="pd-image">
-          <div className="pd-image-placeholder">
-            <svg width="80" height="80" viewBox="0 0 48 48" fill="none">
-              <rect x="4" y="18" width="40" height="20" rx="4" stroke="#444" strokeWidth="2" fill="none"/>
-              <rect x="8" y="14" width="32" height="6" rx="2" stroke="#444" strokeWidth="2" fill="none"/>
-              <line x1="4" y1="38" x2="10" y2="44" stroke="#444" strokeWidth="2" strokeLinecap="round"/>
-              <line x1="44" y1="38" x2="38" y2="44" stroke="#444" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-          </div>
+          {product.imageUrl ? (
+            <img src={product.imageUrl} alt={product.name} className="pd-image-img" />
+          ) : (
+            <div className="pd-image-placeholder">
+              <svg width="80" height="80" viewBox="0 0 48 48" fill="none">
+                <rect x="4" y="18" width="40" height="20" rx="4" stroke="#444" strokeWidth="2" fill="none"/>
+                <rect x="8" y="14" width="32" height="6" rx="2" stroke="#444" strokeWidth="2" fill="none"/>
+                <line x1="4" y1="38" x2="10" y2="44" stroke="#444" strokeWidth="2" strokeLinecap="round"/>
+                <line x1="44" y1="38" x2="38" y2="44" stroke="#444" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </div>
+          )}
           <button className="pd-back" onClick={() => navigate(-1)}>←</button>
           <button className="pd-close" onClick={() => navigate('/')}>✕</button>
         </div>
@@ -106,11 +128,9 @@ export default function ProductDetail() {
 
           {product.specs && (
             <div className="pd-specs">
-              {Object.entries(product.specs).map(([key, val]) => (
-                <div key={key} className="pd-spec-tile">
-                  <span className="pd-spec-label">
-                    {key === 'hardness' ? 'жёсткость' : key === 'height' ? 'высота' : 'гарантия'}
-                  </span>
+              {Object.entries(product.specs).map(([specKey, val]) => (
+                <div key={specKey} className="pd-spec-tile">
+                  <span className="pd-spec-label">{SPEC_LABELS[specKey] || specKey}</span>
                   <span className="pd-spec-val">{val}</span>
                 </div>
               ))}
@@ -121,6 +141,11 @@ export default function ProductDetail() {
             подробнее {showDesc ? '↑' : '↓'}
           </button>
           {showDesc && <p className="pd-desc-long">{product.descriptionLong}</p>}
+          {showDesc && product.composition?.length > 0 && (
+            <ul className="pd-composition">
+              {product.composition.map((c, i) => <li key={i}>{c}</li>)}
+            </ul>
+          )}
 
           <div className="pd-section">
             <div className="pd-section-title">размер</div>
@@ -133,11 +158,30 @@ export default function ProductDetail() {
                       ? 'pd-size-btn--active'
                       : ''
                   }`}
-                  onClick={() => setSelectedSize(size)}
+                  onClick={() => { setSelectedSize(size); setCustomW(String(size.width)); setCustomH(String(size.height)); }}
                 >
                   {size.width}×{size.height}
                 </button>
               ))}
+            </div>
+          </div>
+
+          <div className="pd-section">
+            <div className="pd-section-title">свой размер (см)</div>
+            <div className="pd-custom-size">
+              <input
+                type="number" inputMode="numeric" min="1"
+                value={customW}
+                onChange={(e) => setCustomW(e.target.value)}
+                aria-label="ширина"
+              />
+              <span className="pd-custom-x">×</span>
+              <input
+                type="number" inputMode="numeric" min="1"
+                value={customH}
+                onChange={(e) => setCustomH(e.target.value)}
+                aria-label="длина"
+              />
             </div>
           </div>
 
@@ -178,7 +222,7 @@ export default function ProductDetail() {
 
       <div className="pd-bottom">
         <div className="pd-bottom-size">
-          {selectedSize ? `${selectedSize.width}×${selectedSize.height} см` : ''}
+          {selectedSize ? `${customW || selectedSize.width}×${customH || selectedSize.height} см` : ''}
         </div>
         <button
           className={`price-btn ${added ? 'price-btn--added' : ''}`}

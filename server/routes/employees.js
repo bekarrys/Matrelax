@@ -5,9 +5,9 @@ const { requireRole } = require('../middleware/auth');
 const router = express.Router();
 const COL = 'employees';
 
-// Чтение списка доступно admin + manager (роли уже проверены при монтировании
-// роутера в app.js). Создание сотрудников и финансовые операции (авансы,
-// выработка) — только admin: это критичные действия.
+// Весь роутер admin-only (роль проверена при монтировании в app.js). Менеджер
+// ограничен витриной + историей заказов и сотрудников не видит. Создание,
+// авансы и выработка — критичные финансовые операции, тоже только admin.
 const adminOnly = requireRole('admin');
 
 router.get('/', async (req, res) => {

@@ -224,7 +224,11 @@ export default function AdminDashboard() {
                     const badge  = STATUS_BADGE[order.status] ?? { label: order.status, cls: '' };
                     const unpaid = (order.totalAmount ?? 0) - (order.paidAmount ?? 0);
                     return (
-                      <tr key={order.id} className="dash-tr" onClick={() => navigate(`/orders/${order.id}`)}>
+                      <tr
+                        key={order.id}
+                        className="dash-tr"
+                        onClick={() => navigate(`/orders/${order.id}`)}
+                      >
                         <td>
                           <p className="dash-order-num">{order.orderNumber}</p>
                           <p className="dash-order-date">{formatDate(order.createdAt)}</p>

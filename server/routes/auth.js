@@ -9,10 +9,11 @@ const FIREBASE_REST_URL =
 // POST /api/auth/login  { email, password }
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
-  const apiKey = process.env.FIREBASE_WEB_API_KEY;
+  // Имя без префикса FIREBASE_ — он зарезервирован в Secret Manager.
+  const apiKey = process.env.WEB_API_KEY;
 
   if (!apiKey || apiKey === 'PASTE_YOUR_WEB_API_KEY_HERE') {
-    return res.status(503).json({ error: 'FIREBASE_WEB_API_KEY не настроен в .env' });
+    return res.status(503).json({ error: 'WEB_API_KEY не настроен' });
   }
 
   try {

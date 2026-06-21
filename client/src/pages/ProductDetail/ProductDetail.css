@@ -23,6 +23,30 @@
   width: 100%;
   height: 100%;
 }
+.pd-image-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+/* Свой размер — ручной ввод ширины × длины */
+.pd-custom-size {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pd-custom-size input {
+  width: 88px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 10px 12px;
+  font-size: 15px;
+  text-align: center;
+}
+.pd-custom-size input:focus { border-color: var(--accent); }
+.pd-custom-x { color: var(--text-secondary); font-size: 16px; }
 .pd-back, .pd-close {
   position: absolute;
   top: calc(16px + var(--safe-top));
@@ -101,6 +125,14 @@
   color: var(--text-secondary);
   line-height: 1.6;
   margin-bottom: 16px;
+}
+
+.pd-composition {
+  margin: 0 0 16px;
+  padding-left: 18px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
 }
 
 /* Section */

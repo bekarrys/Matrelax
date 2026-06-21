@@ -64,8 +64,8 @@ router.get('/debts', async (req, res) => {
 
 // GET /api/reports/revenue/:period
 // period: '2026-05-29' | '2026-05' | '2026'
-// Права: только admin и manager (см. firestore.rules: debts/catalog — isAdminOrManager)
-router.get('/revenue/:period', verifyToken, requireRole('admin', 'manager'), async (req, res) => {
+// Права: только admin. Менеджер ограничен витриной + историей заказов.
+router.get('/revenue/:period', verifyToken, requireRole('admin'), async (req, res) => {
   try {
     const report = await getRevenueReport(req.params.period);
     res.json(report);

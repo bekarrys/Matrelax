@@ -16,9 +16,16 @@
   },
   "functions": [
     {
-      "source": "functions",
       "codebase": "default",
-      "ignore": ["node_modules", ".git", "*.local"]
+      "ignore": [
+        "node_modules",
+        ".git",
+        "*.local"
+      ],
+      "source": "functions",
+      "predeploy": [
+        "node \"$PROJECT_DIR/scripts/sync-server-to-functions.js\""
+      ]
     }
   ],
   "hosting": {

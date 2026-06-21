@@ -5,7 +5,7 @@ import './StatusBadge.css';
 export default function StatusBadge({ status }) {
   const label = STATUS_LABELS[status] || status;
   const color = STATUS_COLORS[status] || 'var(--text-secondary)';
-  const bg = STATUS_BG[status] || 'var(--bg-card)';
+  const bg = STATUS_BG[status] || 'var(--surface)';
 
   return (
     <span className="status-badge" style={{ color, background: bg }}>

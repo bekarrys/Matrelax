@@ -33,9 +33,9 @@ service cloud.firestore {
     //  shopOrders      | get + list     | CRUD           | update(статус) | create + get по id
     //  adminOrders     | get+list+delete| CRU + list     | read(progress) | -
     //                  |                |                | update(→ready) |
-    //  employees       | CRUD           | CRUD           | -              | -
+    //  employees       | CRUD           | -              | -              | -
     //  catalog         | CRUD           | read           | -              | -
-    //  debts           | CRUD           | read           | -              | -
+    //  debts           | CRUD           | -              | -              | -
     // ═══════════════════════════════════════════════════════════════
 
 
@@ -127,10 +127,11 @@ service cloud.firestore {
 
     // ───────────────────────────────────────────────────────────────
     //  EMPLOYEES  (сотрудники, авансы, журнал работ)
+    //  Только Admin. Менеджер ограничен витриной + историей заказов.
     // ───────────────────────────────────────────────────────────────
     match /employees/{employeeId} {
-      allow read:  if isAdminOrManager();
-      allow write: if isAdminOrManager();
+      allow read:  if isAdmin();
+      allow write: if isAdmin();
     }
 
 
@@ -146,9 +147,10 @@ service cloud.firestore {
 
     // ───────────────────────────────────────────────────────────────
     //  DEBTS  (дебиторская задолженность / финансы)
+    //  Только Admin — финансы менеджеру недоступны.
     // ───────────────────────────────────────────────────────────────
     match /debts/{debtId} {
-      allow read:  if isAdminOrManager();
+      allow read:  if isAdmin();
       allow write: if isAdmin();
     }
 

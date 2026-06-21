@@ -5,6 +5,20 @@ const { db } = require('../utils/firebase');
 const router = express.Router();
 const COL = 'shopOrders';
 
+// Проверка PIN цеха. Fail-closed: если WORKSHOP_PIN не задан в окружении,
+// доступ закрыт полностью (никакого хардкод-дефолта вроде '1234').
+function requireWorkshopPin(req, res, next) {
+  const expected = process.env.WORKSHOP_PIN;
+  if (!expected) {
+    console.error('Критическая ошибка: WORKSHOP_PIN не задан в переменных окружения');
+    return res.status(503).json({ error: 'Доступ цеха не настроен на сервере' });
+  }
+  if (req.headers['x-workshop-pin'] !== expected) {
+    return res.status(403).json({ error: 'Неверный PIN' });
+  }
+  next();
+}
+
 function generateOrderNumber() {
   const now = new Date();
   const dd = String(now.getDate()).padStart(2, '0');
@@ -82,11 +96,7 @@ router.get('/:id/public', async (req, res) => {
 });
 
 // PATCH /api/orders/:id/status
-router.patch('/:id/status', async (req, res) => {
-  const pin = req.headers['x-workshop-pin'];
-  if (pin !== (process.env.WORKSHOP_PIN || '1234')) {
-    return res.status(403).json({ error: 'Неверный PIN' });
-  }
+router.patch('/:id/status', requireWorkshopPin, async (req, res) => {
   try {
     const ref = db.collection(COL).doc(req.params.id);
     const snap = await ref.get();
@@ -94,21 +104,23 @@ router.patch('/:id/status', async (req, res) => {
     const now = new Date().toISOString();
     const history = [...(snap.data().history || []), { action: req.body.status, timestamp: now }];
     await ref.update({ status: req.body.status, updatedAt: now, history });
-    res.json({ ...snap.data(), status: req.body.status, updatedAt: now, history });
+    const { customerPhone, ...rest } = snap.data();
+    res.json({ ...rest, status: req.body.status, updatedAt: now, history });
   } catch (err) {
     res.status(500).json({ error: 'Ошибка обновления статуса' });
   }
 });
 
-// GET /api/orders
-router.get('/', async (req, res) => {
-  const pin = req.headers['x-workshop-pin'];
-  if (pin !== (process.env.WORKSHOP_PIN || '1234')) {
-    return res.status(403).json({ error: 'Неверный PIN' });
-  }
+// GET /api/orders — список для цеха. Телефон клиента вырезаем: цеху он не нужен,
+// а PIN — общий секрет, не персональная авторизация. ПДн наружу не отдаём.
+router.get('/', requireWorkshopPin, async (req, res) => {
   try {
     const snap = await db.collection(COL).orderBy('createdAt', 'desc').get();
-    res.json(snap.docs.map((d) => d.data()));
+    const orders = snap.docs.map((d) => {
+      const { customerPhone, ...rest } = d.data();
+      return rest;
+    });
+    res.json(orders);
   } catch (err) {
     res.status(500).json({ error: 'Ошибка загрузки заказов' });
   }

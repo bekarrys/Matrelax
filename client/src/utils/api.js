@@ -49,13 +49,6 @@ export const api = {
       method: 'DELETE',
     }),
   },
-  catalog: {
-    get: () => request('/catalog'),
-    calculate: (params) => request('/catalog/calculate', {
-      method: 'POST',
-      body: JSON.stringify(params),
-    }),
-  },
   orders: {
     list: () => request('/orders'),
     get: (id) => request(`/orders/${id}`),
