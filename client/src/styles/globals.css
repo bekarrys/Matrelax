@@ -13,6 +13,7 @@
   --accent-red: #e94560;
   --accent-glow: rgba(109,107,246,0.35);
   --accent-tint: rgba(109,107,246,0.12);
+  --text-on-accent: #fff;
   --gold: #D4B483;
   --gold-tint: rgba(212,180,131,0.12);
 
@@ -85,7 +86,6 @@
 
   /* Border radius aliases */
   --border-radius:    var(--radius-md); /* DEPRECATED: use --radius-md */
-  --border-radius-sm:  var(--radius-sm);/* DEPRECATED: use --radius-sm */
   --border-radius-lg: var(--radius-xl); /* DEPRECATED: use --radius-xl */
 
   /* Shadows */
@@ -215,7 +215,7 @@ img {
 /* Common button styles */
 .btn-primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--text-on-accent);
   border-radius: var(--radius-full);
   padding: 14px 24px;
   font-size: var(--text-md);
@@ -284,7 +284,7 @@ img {
 
 .price-btn {
   background: var(--accent);
-  color: #fff;
+  color: var(--text-on-accent);
   border-radius: var(--radius-full);
   padding: 16px 20px;
   font-size: clamp(var(--text-sm), 4vw, var(--text-lg));

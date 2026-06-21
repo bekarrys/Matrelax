@@ -11,13 +11,13 @@
   display: block;
   font-size: var(--text-base);
   line-height: var(--lh-base);
-  color: var(--text-secondary, #aaa);
+  color: var(--text-secondary);
   margin-top: 4px;
 }
 
 .pa-error {
   background: rgba(233, 69, 96, 0.12);
-  color: #e94560;
+  color: var(--accent-red);
   padding: 10px 14px;
   border-radius: var(--radius-sm);
   margin-bottom: 16px;
@@ -30,15 +30,15 @@
   margin-bottom: 24px;
 }
 .pa-total-card {
-  background: var(--surface, #1a1a1a);
-  border: 1px solid var(--border, #2a2a2a);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-.pa-total-label { font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--text-secondary, #aaa); }
+.pa-total-label { font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--text-secondary); }
 .pa-total-val {
   font-size: var(--text-xl);
   line-height: var(--lh-xl);
@@ -47,7 +47,7 @@
   align-items: center;
   gap: 6px;
 }
-.pa-neg { color: #e94560; }
+.pa-neg { color: var(--accent-red); }
 
 .pa-grid-scroll { overflow-x: auto; }
 .pa-table {
@@ -58,17 +58,17 @@
 }
 .pa-table th,
 .pa-table td {
-  border-bottom: 1px solid var(--border, #2a2a2a);
+  border-bottom: 1px solid var(--border);
   padding: var(--space-3) var(--space-4);
   text-align: left;
   white-space: nowrap;
 }
 .pa-table th {
-  color: var(--text-secondary, #aaa);
+  color: var(--text-secondary);
   font-size: var(--text-xs);
   line-height: var(--lh-sm);
   font-weight: 600;
 }
 .pa-row-loss { background: rgba(233, 69, 96, 0.10); }
 
-.pa-muted { color: var(--text-tertiary, #777); }
+.pa-muted { color: var(--text-tertiary); }

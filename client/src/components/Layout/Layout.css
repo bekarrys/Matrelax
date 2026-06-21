@@ -88,12 +88,12 @@
 /* «Новый заказ» — выделенный пункт (быстрый доступ менеджера) */
 .nav-item--accent {
   background: var(--accent);
-  color: #fff;
+  color: var(--text-on-accent);
   font-weight: 700;
   margin-bottom: 6px;
 }
-.nav-item--accent:hover { background: var(--accent-hover); color: #fff; }
-.nav-item--accent.active { background: var(--accent); color: #fff; box-shadow: none; }
+.nav-item--accent:hover { background: var(--accent-hover); color: var(--text-on-accent); }
+.nav-item--accent.active { background: var(--accent); color: var(--text-on-accent); box-shadow: none; }
 
 /* ── Sidebar footer ──────────────────────────────────────────────────────── */
 .sidebar-footer {
