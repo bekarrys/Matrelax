@@ -55,7 +55,7 @@
   text-align: center;
 }
 .empty-state svg { opacity: 0.2; }
-.empty-state p   { font-size: var(--text-md); line-height: var(--lh-lg); }
+.empty-state p   { font-size: var(--text-md); line-height: var(--lh-sm); }
 .empty-state .btn-primary { width: auto; padding: 10px 20px; min-height: 40px; border-radius: var(--radius-sm); }
 
 /* ── Employees Grid ──────────────────────────────────────────────────────── */
@@ -90,10 +90,10 @@
   color: var(--primary-light);
   font-weight: 700;
   font-size: var(--text-md);
-  line-height: var(--lh-lg);
+  line-height: var(--lh-sm);
   flex-shrink: 0;
 }
-.employee-header h3 { font-size: var(--text-md); line-height: var(--lh-lg); font-weight: 600; color: var(--text-primary); }
+.employee-header h3 { font-size: var(--text-md); line-height: var(--lh-sm); font-weight: 600; color: var(--text-primary); }
 .employee-header p  { font-size: var(--text-sm); line-height: var(--lh-sm); color: var(--text-tertiary); margin-top: 2px; }
 
 /* ── Employee Stats ──────────────────────────────────────────────────────── */
@@ -102,12 +102,12 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   padding: 14px;
-  background: var(--surface-2);
+  background: var(--surface);
   border-radius: var(--radius-sm);
 }
 .emp-stat { display: flex; flex-direction: column; gap: 3px; align-items: center; text-align: center; }
 .emp-stat-label { font-size: var(--text-xs); line-height: var(--lh-sm); color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.04em; }
-.emp-stat-value { font-size: var(--text-md); line-height: var(--lh-lg); font-weight: 700; color: var(--text-primary); }
+.emp-stat-value { font-size: var(--text-md); line-height: var(--lh-sm); font-weight: 700; color: var(--text-primary); }
 .emp-stat-value.accent  { color: var(--status-ready); }
 .emp-stat-value.warning { color: var(--status-progress); }
 
@@ -125,7 +125,7 @@
   font-size: var(--text-sm);
   line-height: var(--lh-sm);
   font-weight: 500;
-  background: var(--surface-2);
+  background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text-secondary);
   transition: all var(--transition-fast);
@@ -167,7 +167,7 @@
 }
 .form-field input {
   padding: 10px 14px;
-  background: var(--surface-2);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-primary);

@@ -24,8 +24,8 @@
   background: transparent;
   color: var(--text-secondary);
   padding: var(--space-3) var(--space-5);
-  font-size: var(--text-base);
-  line-height: var(--lh-base);
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
   border-radius: 0;
   border: none;
 }
@@ -33,6 +33,8 @@
 .toggle-btn:hover {
   background: var(--surface-2);
 }
+
+.toggle-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .toggle-btn.active {
   background: var(--primary);
@@ -119,8 +121,8 @@
 }
 
 .report-section h3 {
-  font-size: var(--text-xs);
-  line-height: var(--lh-sm);
+  font-size: var(--text-base);
+  line-height: var(--lh-base);
   color: var(--text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -139,7 +141,7 @@
   display: flex;
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
-  background: var(--surface-2);
+  background: var(--surface);
   border-radius: var(--radius-sm);
   font-size: var(--text-base);
   line-height: var(--lh-base);
@@ -177,13 +179,8 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
-  background: var(--surface-2);
+  background: var(--surface);
   border-radius: var(--radius-sm);
-  transition: var(--transition-fast);
-}
-
-.order-list-item:hover {
-  background: var(--surface-2);
 }
 
 .order-list-info {
@@ -194,8 +191,8 @@
 
 .order-list-number {
   font-weight: 600;
-  font-size: var(--text-base);
-  line-height: var(--lh-base);
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
   color: var(--primary-light);
 }
 

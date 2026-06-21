@@ -53,8 +53,8 @@
 .pa-table {
   border-collapse: collapse;
   width: 100%;
-  font-size: var(--text-md);
-  line-height: var(--lh-lg);
+  font-size: var(--text-base);
+  line-height: var(--lh-base);
 }
 .pa-table th,
 .pa-table td {

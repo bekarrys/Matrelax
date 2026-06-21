@@ -56,7 +56,7 @@
 }
 .period-btn:hover { color: var(--text-primary); }
 .period-btn.active {
-  background: var(--surface-2);
+  background: var(--surface);
   color: var(--primary-light);
 }
 .period-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -147,7 +147,7 @@
   padding: 20px 24px 16px;
   border-bottom: 1px solid var(--border);
 }
-.dash-card-title { font-size: var(--text-md); line-height: var(--lh-lg); font-weight: 600; color: var(--text-primary); }
+.dash-card-title { font-size: var(--text-md); line-height: var(--lh-sm); font-weight: 600; color: var(--text-primary); }
 .dash-card-sub   { font-size: var(--text-xs); line-height: var(--lh-sm); color: var(--text-tertiary); margin-top: 3px; }
 .dash-card-body  { padding: 20px 24px; }
 
@@ -166,7 +166,7 @@
 
 /* ── Chart Tooltip ───────────────────────────────────────────────────────── */
 .chart-tooltip {
-  background: var(--surface-2);
+  background: var(--surface);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
   padding: 10px 14px;
