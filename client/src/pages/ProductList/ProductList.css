@@ -67,7 +67,6 @@
   color: var(--text-primary);
 }
 .pl-product:hover { background: var(--surface-2); }
-.pl-product:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .pl-product--inactive {
   opacity: 0.5;

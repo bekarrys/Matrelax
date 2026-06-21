@@ -228,9 +228,6 @@ export default function AdminDashboard() {
                         key={order.id}
                         className="dash-tr"
                         onClick={() => navigate(`/orders/${order.id}`)}
-                        tabIndex={0}
-                        role="button"
-                        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/orders/${order.id}`); } }}
                       >
                         <td>
                           <p className="dash-order-num">{order.orderNumber}</p>

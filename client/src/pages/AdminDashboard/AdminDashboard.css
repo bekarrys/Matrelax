@@ -204,7 +204,6 @@
 }
 .dash-tr:last-child { border-bottom: none; }
 .dash-tr:hover { background: var(--surface-2); }
-.dash-tr:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .dash-table td { padding: var(--space-3) var(--space-4); }
 .dash-table td.text-right { text-align: right; }
 
