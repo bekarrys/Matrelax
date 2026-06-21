@@ -3,6 +3,7 @@ import { api } from '../../utils/api';
 import { formatPrice, formatDate } from '../../utils/constants';
 import { BarChart3, Calendar, TrendingUp, Loader2, Download } from 'lucide-react';
 import './Reports.css';
+import DatePickerField from '../../components/DatePickerField/DatePickerField';
 
 export default function Reports() {
   const [reportType, setReportType] = useState('daily');
@@ -73,9 +74,9 @@ export default function Reports() {
 
         <div className="report-date-picker">
           {reportType === 'daily' ? (
-            <input type="date" value={selectedDate} onChange={e => setSelectedDate(e.target.value)} />
+            <DatePickerField value={selectedDate} onChange={setSelectedDate} />
           ) : (
-            <input type="month" value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} />
+            <DatePickerField mode="month" value={selectedMonth} onChange={setSelectedMonth} />
           )}
           <button className="btn-primary" onClick={handleGenerate} disabled={loading}>
             {loading ? <Loader2 size={16} className="spin" /> : <TrendingUp size={16} />}

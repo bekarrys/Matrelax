@@ -1,0 +1,139 @@
+/* DatePickerField — Ark UI date picker в теме Premium Dark (токены) */
+
+.dpf-control { display: inline-flex; }
+
+/* Триггер — выглядит как остальные инпуты приложения */
+.dpf-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  background: var(--surface-2);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+.dpf-trigger:hover { background: var(--surface-3); }
+.dpf-trigger[data-state="open"] { border-color: var(--accent); }
+.dpf-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.dpf-cal-icon { width: 16px; height: 16px; color: var(--text-tertiary); flex-shrink: 0; }
+.dpf-trigger-text { color: var(--text-secondary); }
+
+/* Плавающая панель */
+.dpf-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-3);
+  z-index: var(--z-modal);
+  display: inline-block;
+}
+.dpf-content:focus-visible { outline: none; }
+
+/* Шапка вида (навигация/заголовок) */
+.dpf-viewctl {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+  gap: var(--space-2);
+}
+.dpf-navbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.dpf-navbtn:hover { background: var(--surface-2); color: var(--text-primary); }
+.dpf-navbtn svg { width: 16px; height: 16px; }
+.dpf-viewtrigger {
+  background: transparent;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+  font-weight: 600;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+.dpf-viewtrigger:hover { background: var(--surface-2); }
+
+/* Сетка */
+.dpf-table { border-collapse: separate; border-spacing: 2px; }
+.dpf-weekday {
+  width: 36px;
+  height: 28px;
+  text-align: center;
+  font-size: var(--text-xs);
+  line-height: var(--lh-sm);
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+.dpf-cell { padding: 0; }
+
+/* Ячейка-день */
+.dpf-day {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.dpf-day:hover { background: var(--surface-2); }
+.dpf-day[data-outside-range] { color: var(--text-tertiary); }
+.dpf-day[data-disabled] { opacity: 0.35; pointer-events: none; }
+.dpf-day[data-selected] {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.dpf-day[data-selected]:hover { background: var(--accent-hover); }
+/* Точка «сегодня» */
+.dpf-day[data-today]::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+}
+.dpf-day[data-today][data-selected]::after { background: #fff; }
+
+/* Ячейка месяца/года */
+.dpf-chunk {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.dpf-chunk:hover { background: var(--surface-2); }
+.dpf-chunk[data-selected] { background: var(--accent); color: #fff; font-weight: 600; }
+.dpf-chunk[data-selected]:hover { background: var(--accent-hover); }
+.dpf-chunk[data-disabled] { opacity: 0.35; pointer-events: none; }

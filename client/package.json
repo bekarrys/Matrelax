@@ -10,6 +10,7 @@
     "test": "node --test \"src/**/*.test.js\" \"src/**/*.test.mjs\""
   },
   "dependencies": {
+    "@ark-ui/react": "^5.37.2",
     "autoprefixer": "^10.5.0",
     "lucide-react": "^0.344.0",
     "postcss": "^8.5.15",

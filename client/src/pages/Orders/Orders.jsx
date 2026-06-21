@@ -7,6 +7,7 @@ import {
 import StatusBadge from '../../components/StatusBadge/StatusBadge';
 import { Plus, Search, X } from 'lucide-react';
 import './Orders.css';
+import DatePickerField from '../../components/DatePickerField/DatePickerField';
 
 // Бейдж оплаты выводится из сумм заказа.
 function paymentInfo(o) {
@@ -120,7 +121,7 @@ export default function Orders() {
               <option key={k} value={k}>{v}</option>
             ))}
           </select>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <DatePickerField value={date} onChange={setDate} />
           {hasFilters && (
             <button
               className="btn-text"

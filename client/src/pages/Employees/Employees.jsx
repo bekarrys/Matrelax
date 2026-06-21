@@ -5,6 +5,7 @@ import { Plus, TrendingUp, Wallet, Loader2, Users } from 'lucide-react';
 import Modal from '../../components/Modal/Modal';
 import { RoleGuard } from '../../components/guards/RoleGuard';
 import './Employees.css';
+import DatePickerField from '../../components/DatePickerField/DatePickerField';
 
 export default function Employees() {
   const [employees, setEmployees] = useState([]);
@@ -221,7 +222,7 @@ export default function Employees() {
               </div>
               <div className="form-field">
                 <label>Дата</label>
-                <input type="date" value={formData.date} onChange={e => setFormData(d => ({ ...d, date: e.target.value }))} />
+                <DatePickerField value={formData.date} onChange={v => setFormData(d => ({ ...d, date: v }))} />
               </div>
               <div className="form-field">
                 <label>Комментарий</label>
@@ -237,7 +238,7 @@ export default function Employees() {
               </div>
               <div className="form-field">
                 <label>Дата</label>
-                <input type="date" value={formData.date} onChange={e => setFormData(d => ({ ...d, date: e.target.value }))} />
+                <DatePickerField value={formData.date} onChange={v => setFormData(d => ({ ...d, date: v }))} />
               </div>
               <div className="form-field">
                 <label>Комментарий</label>

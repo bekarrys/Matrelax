@@ -12,7 +12,7 @@ import {
 import { api } from '../../utils/api';
 import { formatPrice, formatDate } from '../../utils/constants';
 import './AdminDashboard.css';
-import './AdminDashboard.css';
+import DatePickerField from '../../components/DatePickerField/DatePickerField';
 
 const STATUS_BADGE = {
   progress:  { label: 'В работе',  cls: 'badge-progress'  },
@@ -143,12 +143,11 @@ export default function AdminDashboard() {
             </button>
           </div>
 
-          <input
-            type="month"
+          <DatePickerField
+            mode="month"
             value={selectedMonth}
-            onChange={e => setSelectedMonth(e.target.value)}
+            onChange={setSelectedMonth}
             className="dash-date-input"
-            title="Месяц для графика"
           />
         </div>
       </div>
