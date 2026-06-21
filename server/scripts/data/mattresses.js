@@ -60,7 +60,7 @@ function royalModel(over) {
 
 const MATTRESSES = [
   tiered({
-    id: '500', name: '500', series: 'Боннельные',
+    id: '500', name: '500', series: 'Боннельные', imageUrl: '/products/500.png',
     specs: { type: 'Боннельный, Полу-ортопед', firmness: 'Жесткий', height: '20-24см', load: '90кг', warranty: '-', serviceLife: '10 лет' },
     composition: ['Кокосовая койра', 'Термовойлок', 'Пружинный Боннель'],
     ...tieredPrices([
@@ -71,7 +71,7 @@ const MATTRESSES = [
     ]),
   }),
   tiered({
-    id: '504', name: '504', series: 'Боннельные',
+    id: '504', name: '504', series: 'Боннельные', imageUrl: '/products/504.png',
     specs: { type: 'Боннельный, Полу-ортопед', firmness: 'Средний', height: '18-22см', load: '90кг', warranty: '-', serviceLife: '10 лет' },
     composition: ['Орто Пена', 'Термовойлок', 'Пружинный Боннель'],
     ...tieredPrices([
