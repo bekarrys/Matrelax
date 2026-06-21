@@ -38,7 +38,7 @@
 
 .toggle-btn.active {
   background: var(--primary);
-  color: white;
+  color: var(--text-on-accent);
 }
 
 .report-date-picker {

@@ -46,7 +46,7 @@
   flex-shrink: 0;
   transition: background var(--transition-fast), color var(--transition-fast);
 }
-.sidebar-toggle:hover { background: var(--surface); color: var(--text-primary); }
+.sidebar-toggle:hover { background: var(--surface-2); color: var(--text-primary); }
 .sidebar.collapsed .sidebar-toggle { margin: 0 auto; }
 
 /* ── Nav ─────────────────────────────────────────────────────────────────── */
@@ -75,7 +75,7 @@
   overflow: hidden;
 }
 .nav-item:hover {
-  background: var(--surface);
+  background: var(--surface-2);
   color: var(--text-primary);
 }
 .nav-item.active {

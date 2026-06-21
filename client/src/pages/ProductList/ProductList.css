@@ -12,7 +12,7 @@
   margin-bottom: 24px;
   flex-wrap: wrap;
 }
-.product-list-page .page-header h1 { margin: 0; font-size: var(--text-xl); line-height: var(--lh-xl); }
+.product-list-page .page-header h1 { margin: 0; font-size: var(--text-2xl); line-height: var(--lh-2xl); }
 .page-subtitle { color: var(--text-secondary); font-size: var(--text-sm); line-height: var(--lh-sm); margin: 4px 0 0; }
 
 .pl-series-list {
