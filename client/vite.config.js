@@ -7,6 +7,9 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Регистрируем SW вручную в main.jsx (нужна периодическая проверка обновлений),
+      // поэтому плагин не инжектит свой registerSW.js.
+      injectRegister: null,
       includeAssets: ['favicon.svg', 'icons/*.png'],
       manifest: {
         name: 'Matrelax — матрасы и подушки',
