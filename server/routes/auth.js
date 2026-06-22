@@ -5,6 +5,7 @@ const router = express.Router();
 
 const FIREBASE_REST_URL =
   'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword';
+const FIREBASE_REFRESH_URL = 'https://securetoken.googleapis.com/v1/token';
 
 // POST /api/auth/login  { email, password }
 router.post('/login', async (req, res) => {
@@ -46,6 +47,34 @@ router.post('/login', async (req, res) => {
   } catch (err) {
     console.error('Login error:', err.message);
     res.status(500).json({ error: 'Ошибка сервера при входе' });
+  }
+});
+
+// POST /api/auth/refresh  { refreshToken } → новый id-токен.
+// ID-токен Firebase живёт 1 час; клиент меняет протухший на свежий без релогина.
+router.post('/refresh', async (req, res) => {
+  const { refreshToken } = req.body;
+  const apiKey = process.env.WEB_API_KEY;
+  if (!apiKey || apiKey === 'PASTE_YOUR_WEB_API_KEY_HERE') {
+    return res.status(503).json({ error: 'WEB_API_KEY не настроен' });
+  }
+  if (!refreshToken) {
+    return res.status(400).json({ error: 'Нет refreshToken' });
+  }
+  try {
+    const fbRes = await fetch(`${FIREBASE_REFRESH_URL}?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `grant_type=refresh_token&refresh_token=${encodeURIComponent(refreshToken)}`,
+    });
+    const fbData = await fbRes.json();
+    if (!fbRes.ok) {
+      return res.status(401).json({ error: 'Не удалось обновить сессию' });
+    }
+    res.json({ token: fbData.id_token, refreshToken: fbData.refresh_token });
+  } catch (err) {
+    console.error('Refresh error:', err.message);
+    res.status(500).json({ error: 'Ошибка сервера при обновлении сессии' });
   }
 });
 

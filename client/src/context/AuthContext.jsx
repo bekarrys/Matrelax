@@ -26,12 +26,15 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (credentials) => {
     const data = await api.auth.login(credentials);
     localStorage.setItem('token', data.token);
+    // refreshToken нужен, чтобы продлевать сессию после протухания id-токена (1 час).
+    if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
     setUser({ email: data.email, role: data.role, displayName: data.displayName, token: data.token });
     return data;
   }, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     setUser(null);
   }, []);
 

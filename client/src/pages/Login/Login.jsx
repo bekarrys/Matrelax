@@ -20,7 +20,10 @@ export default function Login() {
       await authLogin({ email, password });
       navigate('/orders');
     } catch (err) {
-      setError(err.message || 'Ошибка входа');
+      // "Failed to fetch" (сеть/сервер недоступен) — показываем человеку понятное.
+      // Серверные сообщения ("Неверный email или пароль") пробрасываем как есть.
+      const isNetwork = /failed to fetch|networkerror|load failed/i.test(err.message || '');
+      setError(isNetwork ? 'Ошибка входа' : (err.message || 'Ошибка входа'));
     } finally {
       setLoading(false);
     }
