@@ -18,12 +18,11 @@ router.get('/daily/:date?', async (req, res) => {
     const dayOrders = orders.filter((o) => o.createdAt && o.createdAt.startsWith(date));
     const totalRevenue = dayOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
     const totalPaid = dayOrders.reduce((s, o) => s + (o.paidAmount || 0), 0);
-    const totalDebt = dayOrders.reduce((s, o) => s + (o.balance || 0), 0);
     const byPoint = dayOrders.reduce((acc, o) => {
       acc[o.salesPoint] = (acc[o.salesPoint] || 0) + 1;
       return acc;
     }, {});
-    res.json({ date, count: dayOrders.length, totalRevenue, totalPaid, totalDebt, byPoint, orders: dayOrders });
+    res.json({ date, count: dayOrders.length, totalRevenue, totalPaid, byPoint, orders: dayOrders });
   } catch (err) {
     res.status(500).json({ error: 'Ошибка генерации отчёта' });
   }
@@ -36,7 +35,6 @@ router.get('/monthly/:month?', async (req, res) => {
     const monthOrders = orders.filter((o) => o.createdAt && o.createdAt.startsWith(month));
     const totalRevenue = monthOrders.reduce((s, o) => s + (o.totalAmount || 0), 0);
     const totalPaid = monthOrders.reduce((s, o) => s + (o.paidAmount || 0), 0);
-    const totalDebt = monthOrders.reduce((s, o) => s + (o.balance || 0), 0);
     const modelCount = {};
     monthOrders.forEach((o) => {
       (o.items || []).forEach((item) => {
@@ -44,21 +42,9 @@ router.get('/monthly/:month?', async (req, res) => {
       });
     });
     const topModels = Object.entries(modelCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
-    res.json({ month, count: monthOrders.length, totalRevenue, totalPaid, totalDebt, topModels, orders: monthOrders });
+    res.json({ month, count: monthOrders.length, totalRevenue, totalPaid, topModels, orders: monthOrders });
   } catch (err) {
     res.status(500).json({ error: 'Ошибка генерации отчёта' });
-  }
-});
-
-// GET /api/reports/debts — все заказы с ненулевым остатком (вместо debts.json)
-router.get('/debts', async (req, res) => {
-  try {
-    const orders = await getAllOrders();
-    const debts = orders.filter((o) => (o.balance || 0) > 0);
-    const totalDebt = debts.reduce((s, o) => s + o.balance, 0);
-    res.json({ debts, totalDebt });
-  } catch (err) {
-    res.status(500).json({ error: 'Ошибка загрузки долгов' });
   }
 });
 

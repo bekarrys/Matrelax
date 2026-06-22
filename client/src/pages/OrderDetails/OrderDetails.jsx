@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../utils/api';
 import { RoleGuard } from '../../components/guards/RoleGuard';
 import {
-  SALES_POINTS, ORDER_TYPES, CLIENT_CATEGORIES, PAYMENT_TYPES, PAYMENT_METHODS, DELIVERY_TYPES,
+  SALES_POINTS, ORDER_TYPES, CLIENT_CATEGORIES, PAYMENT_METHODS, DELIVERY_TYPES,
   STATUS, STATUS_ORDER, STATUS_LABELS, FIELD_LABELS,
   formatPrice, formatDateTime,
 } from '../../utils/constants';
@@ -17,7 +17,7 @@ function recomputeTotals(f) {
   const itemsTotal = (f.items || []).reduce(
     (s, i) => s + ((i.price || 0) + (i.surcharge || 0)) * (i.quantity || 1), 0);
   const totalAmount = itemsTotal + (f.deliveryFee || 0) - (f.discount || 0);
-  return { totalAmount, balance: totalAmount - (f.paidAmount || 0) };
+  return { totalAmount };
 }
 
 function fmtVal(v) {
@@ -86,8 +86,9 @@ export default function OrderDetails() {
     setSaving(true);
     setError('');
     try {
-      const { totalAmount, balance } = recomputeTotals(form);
-      const updated = await api.adminOrders.update(id, { ...form, totalAmount, balance });
+      const { totalAmount } = recomputeTotals(form);
+      // Долг отменён: заказ всегда оплачен полностью.
+      const updated = await api.adminOrders.update(id, { ...form, totalAmount, paidAmount: totalAmount, balance: 0 });
       setOrder(updated);
       setForm(updated);
       setEditMode(false);
@@ -307,23 +308,14 @@ export default function OrderDetails() {
           <h3>Финансы</h3>
           <div className="detail-rows">
             {editMode ? (
-              <>
-                <EditRow label="Скидка"><input type="number" min="0" value={form.discount || 0} onChange={(e) => updateForm({ discount: Number(e.target.value) })} /></EditRow>
-                <EditRow label="Оплачено"><input type="number" min="0" value={form.paidAmount || 0} onChange={(e) => updateForm({ paidAmount: Number(e.target.value) })} /></EditRow>
-              </>
+              <EditRow label="Скидка"><input type="number" min="0" value={form.discount || 0} onChange={(e) => updateForm({ discount: Number(e.target.value) })} /></EditRow>
             ) : (
               <>
                 <DetailRow label="Доставка" value={formatPrice(order.deliveryFee || 0)} />
                 {order.discount > 0 && <DetailRow label="Скидка" value={`−${formatPrice(order.discount)}`} accent="negative" />}
-                <DetailRow label="Оплачено" value={formatPrice(order.paidAmount || 0)} accent="positive" />
               </>
             )}
             <DetailRow label="Итого" value={formatPrice(totals.totalAmount)} accent="grand" />
-            <DetailRow
-              label={totals.balance > 0 ? 'Долг' : 'Сдача'}
-              value={formatPrice(Math.abs(totals.balance))}
-              accent={totals.balance > 0 ? 'warning' : 'positive'}
-            />
           </div>
         </div>
 
@@ -339,20 +331,6 @@ export default function OrderDetails() {
               </EditRow>
             ) : (
               <DetailRow label="Способ" value={DELIVERY_TYPES[order.deliveryType] || '—'} />
-            )}
-            {editMode ? (
-              <EditRow label="Оплата">
-                <select
-                  value={form.paymentType || 'paid'}
-                  onChange={(e) => updateForm({ paymentType: e.target.value })}
-                >
-                  {Object.entries(PAYMENT_TYPES).map(([k, v]) => (
-                    <option key={k} value={k}>{v}</option>
-                  ))}
-                </select>
-              </EditRow>
-            ) : (
-              <DetailRow label="Оплата" value={PAYMENT_TYPES[order.paymentType] || '—'} />
             )}
             {editMode ? (
               <EditRow label="Способ оплаты">

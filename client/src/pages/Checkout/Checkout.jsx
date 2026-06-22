@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../../utils/api';
 import { useCartStore } from '../../store/cartStore';
 import { cartToOrderItems, cartTotal } from '../../utils/orderMapping.mjs';
-import { SALES_POINTS, PAYMENT_METHODS, PAYMENT_TYPES, formatPrice, formatPhone } from '../../utils/constants';
+import { SALES_POINTS, PAYMENT_METHODS, formatPrice, formatPhone } from '../../utils/constants';
 import './Checkout.css';
 
 export default function Checkout() {
@@ -15,8 +15,6 @@ export default function Checkout() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
-  const [paymentType, setPaymentType] = useState('paid');
-  const [paidAmount, setPaidAmount] = useState('');
   const [deliveryType, setDeliveryType] = useState('pickup');
   const [address, setAddress] = useState('');
   const [loading, setLoading] = useState(false);
@@ -24,7 +22,6 @@ export default function Checkout() {
 
   const handlePhoneChange = (e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11));
 
-  const paid = paymentType === 'paid' ? total : Number(paidAmount) || 0;
   const canSubmit = items.length > 0 && salesPoint && name.trim() && phone.length >= 10 && paymentMethod;
 
   const handleSubmit = async () => {
@@ -39,9 +36,9 @@ export default function Checkout() {
         items: cartToOrderItems(items),
         totalAmount: total,
         paymentMethod,
-        paymentType,
-        paidAmount: paid,
-        balance: total - paid,
+        paymentType: 'paid',
+        paidAmount: total,
+        balance: 0,
         deliveryType,
         deliveryAddress: deliveryType === 'delivery' ? address : '',
         status: 'new',
@@ -109,30 +106,6 @@ export default function Checkout() {
         </div>
 
         <div className="co-field">
-          <label>статус оплаты</label>
-          <div className="co-toggle-row">
-            {Object.entries(PAYMENT_TYPES).map(([key, label]) => (
-              <button
-                key={key}
-                className={`co-toggle-btn ${paymentType === key ? 'co-toggle-btn--active' : ''}`}
-                onClick={() => setPaymentType(key)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {paymentType !== 'paid' && (
-          <div className="co-field">
-            <label>внесено (KZT)</label>
-            <div className="co-input-wrap">
-              <input type="number" min="0" value={paidAmount} onChange={(e) => setPaidAmount(e.target.value)} placeholder="0" />
-            </div>
-          </div>
-        )}
-
-        <div className="co-field">
           <label>получение</label>
           <div className="co-toggle-row">
             {[['pickup', 'Самовывоз'], ['delivery', 'Доставка']].map(([key, label]) => (
@@ -169,9 +142,6 @@ export default function Checkout() {
             <span>итого</span>
             <span>{formatPrice(total)}</span>
           </div>
-          {paymentType !== 'paid' && (
-            <div className="co-summary-row"><span>долг</span><span>{formatPrice(total - paid)}</span></div>
-          )}
         </div>
 
         {error && <div className="co-error">{error}</div>}

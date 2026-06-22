@@ -211,7 +211,6 @@
 .dash-order-date { font-size: var(--text-xs); line-height: var(--lh-sm); color: var(--text-tertiary); margin-top: 2px; }
 .dash-phone      { color: var(--text-secondary); font-size: var(--text-sm); line-height: var(--lh-sm); }
 .dash-amount     { font-weight: 700; color: var(--text-primary); }
-.dash-debt       { font-size: var(--text-xs); line-height: var(--lh-sm); color: var(--accent-red); margin-top: 2px; }
 .dash-paid span  { color: var(--text-tertiary); font-size: var(--text-sm); line-height: var(--lh-sm); }
 .dash-paid span.paid { color: var(--status-ready); }
 

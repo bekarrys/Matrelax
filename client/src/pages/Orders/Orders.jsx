@@ -9,15 +9,6 @@ import { Plus, Search, X } from 'lucide-react';
 import './Orders.css';
 import DatePickerField from '../../components/DatePickerField/DatePickerField';
 
-// Бейдж оплаты выводится из сумм заказа.
-function paymentInfo(o) {
-  const total = o.totalAmount || 0;
-  const paid = o.paidAmount || 0;
-  if (total > 0 && paid >= total) return { label: 'Оплачен', kind: 'paid' };
-  if (paid > 0) return { label: 'Частично', kind: 'advance' };
-  return { label: 'Долг', kind: 'debt' };
-}
-
 // Компактный тег типа: модель первой позиции (+N, если позиций больше).
 function typeTag(o) {
   const items = o.items || [];
@@ -67,7 +58,6 @@ export default function Orders() {
   }, [orders, search, statusFilter, point, date]);
 
   const totalRevenue = orders.reduce((s, o) => s + (o.totalAmount || 0), 0);
-  const totalDebt = orders.reduce((s, o) => s + ((o.totalAmount || 0) - (o.paidAmount || 0)), 0);
   const hasFilters = search || statusFilter || point || date;
 
   return (
@@ -91,10 +81,6 @@ export default function Orders() {
         <div className="stat-card">
           <span className="stat-label">Выручка</span>
           <span className="stat-value accent">{formatPrice(totalRevenue)}</span>
-        </div>
-        <div className="stat-card">
-          <span className="stat-label">Долги</span>
-          <span className="stat-value warning">{formatPrice(totalDebt)}</span>
         </div>
       </div>
 
@@ -165,7 +151,6 @@ export default function Orders() {
               <th>Телефон</th>
               <th>Тип</th>
               <th>Статус</th>
-              <th>Оплата</th>
               <th className="num">Сумма</th>
               <th>Дата</th>
               <th aria-label="Открыть"></th>
@@ -175,18 +160,17 @@ export default function Orders() {
             {loading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <tr key={i} className="skeleton-row">
-                  {Array.from({ length: 10 }).map((__, j) => (
+                  {Array.from({ length: 9 }).map((__, j) => (
                     <td key={j}><span className="skeleton-cell" /></td>
                   ))}
                 </tr>
               ))
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan={10} className="orders-empty">Ничего не найдено</td>
+                <td colSpan={9} className="orders-empty">Ничего не найдено</td>
               </tr>
             ) : (
               filtered.map((o) => {
-                const pay = paymentInfo(o);
                 return (
                   <tr key={o.id} className="orders-row" onClick={() => navigate(`/orders/${o.id}`)} tabIndex={0} role="button" onKeyDown={(e) => { if (e.target !== e.currentTarget) return; if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/orders/${o.id}`); } }}>
                     <td className="mono">{o.orderNumber || o.id}</td>
@@ -195,7 +179,6 @@ export default function Orders() {
                     <td className="mono">{o.customerPhone || '—'}</td>
                     <td><span className="type-tag">{typeTag(o)}</span></td>
                     <td><StatusBadge status={o.status} /></td>
-                    <td><span className={`pay-badge pay-${pay.kind}`}>{pay.label}</span></td>
                     <td className="num">{formatPrice(o.totalAmount)}</td>
                     <td>{formatDate(o.createdAt)}</td>
                     <td className="chevron">›</td>

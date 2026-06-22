@@ -107,10 +107,6 @@ export default function Reports() {
               <span className="summary-label">Оплачено</span>
               <span className="summary-value">{formatPrice(currentReport.totalPaid)}</span>
             </div>
-            <div className="summary-card highlight-red">
-              <span className="summary-label">Долги</span>
-              <span className="summary-value">{formatPrice(currentReport.totalDebt)}</span>
-            </div>
           </div>
 
           {/* By Sales Point */}

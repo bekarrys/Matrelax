@@ -90,10 +90,6 @@ export default function Receipt({ order, onClose }) {
             <span>Оплачено:</span>
             <span>{formatPrice(order.paidAmount || 0)}</span>
           </div>
-          <div className={`receipt-totals-row ${order.balance > 0 ? 'debt' : ''}`}>
-            <span>{order.balance > 0 ? 'Долг:' : 'Сдача:'}</span>
-            <span>{formatPrice(Math.abs(order.balance || 0))}</span>
-          </div>
         </div>
 
         <div className="receipt-divider" />
@@ -145,8 +141,7 @@ function generateReceiptText(order) {
   text += `\nДоставка: ${formatPrice(order.deliveryFee || 0)}\n`;
   if (order.discount > 0) text += `Скидка: -${formatPrice(order.discount)}\n`;
   text += `\nИТОГО: ${formatPrice(order.totalAmount)}\n`;
-  text += `Оплачено: ${formatPrice(order.paidAmount || 0)}\n`;
-  text += `Долг: ${formatPrice(Math.abs(order.balance || 0))}\n\n`;
+  text += `Оплачено: ${formatPrice(order.paidAmount || 0)}\n\n`;
   text += `MATRELAX — Сделано в Казахстане 🇰🇿`;
   return text;
 }

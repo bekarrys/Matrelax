@@ -47,8 +47,6 @@ export const FIELD_LABELS = {
   totalAmount: 'Сумма',
   paidAmount: 'Оплачено',
   paymentMethod: 'Способ оплаты',
-  paymentType: 'Тип оплаты',
-  balance: 'Остаток',
   items: 'Позиции',
   status: 'Статус',
 };
@@ -67,16 +65,10 @@ export const CLIENT_CATEGORIES = {
   regular: 'Обычный',
 };
 
-export const PAYMENT_TYPES = {
-  paid: 'Оплачен',
-  debt: 'Долг',
-};
-
 export const PAYMENT_METHODS = {
   cash:  'Наличные',
-  card:  'Карта (терминал)',
+  card:  'Карта / банк',
   kaspi: 'Kaspi QR / перевод',
-  other: 'Другой банк / прочее',
 };
 
 export const DELIVERY_TYPES = {

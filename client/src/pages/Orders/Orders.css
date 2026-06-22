@@ -150,19 +150,6 @@
   font-weight: 600;
 }
 
-/* Payment badge */
-.pay-badge {
-  display: inline-block;
-  border-radius: var(--radius-sm);
-  padding: 2px 8px;
-  font-size: var(--text-xs);
-  line-height: var(--lh-sm);
-  font-weight: 700;
-}
-.pay-paid    { color: var(--status-ready);    background: var(--status-ready-bg); }
-.pay-advance { color: var(--status-progress); background: var(--status-progress-bg); }
-.pay-debt    { color: var(--accent-red);      background: rgba(233, 69, 96, 0.12); }
-
 /* Empty / skeleton */
 .orders-empty { text-align: center; color: var(--text-secondary); padding: 32px 0; }
 .skeleton-row td { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--border); }

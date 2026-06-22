@@ -142,11 +142,6 @@
   color: var(--accent);
 }
 
-.receipt-totals-row.debt {
-  color: var(--status-progress);
-  font-weight: 700;
-}
-
 .receipt-footer-info {
   padding: var(--space-4) var(--space-6);
 }

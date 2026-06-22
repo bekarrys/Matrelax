@@ -221,7 +221,6 @@ export default function AdminDashboard() {
                 <tbody>
                   {recentOrders.map(order => {
                     const badge  = STATUS_BADGE[order.status] ?? { label: order.status, cls: '' };
-                    const unpaid = (order.totalAmount ?? 0) - (order.paidAmount ?? 0);
                     return (
                       <tr
                         key={order.id}
@@ -238,7 +237,6 @@ export default function AdminDashboard() {
                         </td>
                         <td className="text-right">
                           <p className="dash-amount">{formatPrice(order.totalAmount)}</p>
-                          {unpaid > 0 && <p className="dash-debt">долг {formatPrice(unpaid)}</p>}
                         </td>
                         <td className="text-right dash-paid">
                           <span className={order.paidAmount >= order.totalAmount ? 'paid' : ''}>
