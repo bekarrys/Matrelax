@@ -29,6 +29,22 @@ export function getMarketPrice(product, fabric, size) {
   return cellFrom(getMarketPrices(product), fabric, size);
 }
 
+// Зеркало server/utils/pricing.js: нестандартная ширина округляется ВВЕРХ до
+// ближайшего стандарта (78→80), свыше максимума — максимум. Высота точная.
+// Клиент использует это для предпросмотра цены; сервер — источник правды.
+export function resolveSizeKey(product, fabric, width, height) {
+  const exact = sizeKey(width, height);
+  const f = getPrices(product)[fabric];
+  if (f && typeof f[exact] === 'number') return exact;
+  const sizes = Object.keys(f || {})
+    .map((k) => { const [w, h] = k.split('x').map(Number); return { w, h, key: k }; })
+    .filter((s) => s.h === height)
+    .sort((a, b) => a.w - b.w);
+  if (!sizes.length) return exact;
+  const up = sizes.find((s) => s.w >= width);
+  return (up || sizes[sizes.length - 1]).key;
+}
+
 export function getMinPrice(product) {
   const matrix = getPrices(product);
   const vals = [];

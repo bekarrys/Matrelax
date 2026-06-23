@@ -7,9 +7,33 @@ const {
   hasItemChanges,
   computeFieldDiffs,
 } = require('../utils/orderLogic');
+const { priceOrderItems, orderTotal } = require('../utils/pricing');
 
 const router = express.Router();
 const COL = 'adminOrders';
+const PRODUCTS_COL = 'products';
+
+// Грузит товары для позиций заказа в карту { modelId: productDoc }.
+// getDoc — db.collection(...).doc(id).get или tx.get(ref) (для транзакций).
+async function loadProductsFor(items, getDoc) {
+  const ids = [...new Set((items || []).map((i) => i.modelId).filter(Boolean))];
+  const entries = await Promise.all(
+    ids.map(async (id) => {
+      const snap = await getDoc(db.collection(PRODUCTS_COL).doc(id));
+      return [id, snap.exists ? snap.data() : null];
+    })
+  );
+  return Object.fromEntries(entries.filter(([, p]) => p));
+}
+
+// Считает авторитетную сумму заказа из живого каталога (анти-тамперинг):
+// цена позиций НЕ берётся с клиента. Возвращает { items, totalAmount }.
+async function pricedOrder(body, getDoc) {
+  const products = await loadProductsFor(body.items, getDoc);
+  const { items, itemsTotal } = priceOrderItems(body.items, products);
+  const totalAmount = orderTotal(itemsTotal, body.deliveryFee, body.discount);
+  return { items, totalAmount };
+}
 
 // Поля, которые нельзя перезаписывать через PUT (управляются системой/отдельными ручками).
 const PROTECTED_FIELDS = ['id', 'orderNumber', 'createdAt', 'createdBy', '_source', 'history', 'status'];
@@ -60,8 +84,18 @@ router.post('/', verifyToken, requireRole('admin', 'manager'), async (req, res) 
     const orderNumber = `${point}-${d}${m}${y}-${seq}`;
     const id = `${date}-${seq}`;
 
+    if (!Array.isArray(req.body.items) || req.body.items.length === 0) {
+      throw httpError(400, 'Заказ без позиций');
+    }
+    // Сервер пересчитывает цены из каталога — не доверяем суммам клиента.
+    const { items, totalAmount } = await pricedOrder(req.body, (ref) => ref.get());
+
     const order = {
       ...req.body,
+      items,
+      totalAmount,
+      paidAmount: totalAmount,  // долг отменён: заказ всегда оплачен полностью
+      balance: 0,
       id,
       orderNumber,
       createdAt: now,
@@ -74,7 +108,8 @@ router.post('/', verifyToken, requireRole('admin', 'manager'), async (req, res) 
     };
     await db.collection(COL).doc(id).set(order);
     res.status(201).json(order);
-  } catch {
+  } catch (err) {
+    if (err.status) return res.status(err.status).json({ error: err.message });
     res.status(500).json({ error: 'Ошибка создания заказа' });
   }
 });
@@ -96,6 +131,19 @@ router.put('/:id', verifyToken, requireRole('admin', 'manager'), async (req, res
       const itemsChanged = hasItemChanges(order.items, incoming.items);
       if (itemsChanged && !canEditItems(order)) {
         throw httpError(403, 'Позиции заблокированы: заказ в работе. Разблокируйте с указанием причины.');
+      }
+
+      // Если позиции переданы — пересчитываем цены из каталога (анти-тамперинг).
+      // Все чтения (tx.get товаров) идут до записи tx.set ниже.
+      if (Array.isArray(incoming.items)) {
+        const products = await loadProductsFor(incoming.items, (ref2) => tx.get(ref2));
+        const { items, itemsTotal } = priceOrderItems(incoming.items, products);
+        const deliveryFee = incoming.deliveryFee ?? order.deliveryFee;
+        const discount = incoming.discount ?? order.discount;
+        incoming.items = items;
+        incoming.totalAmount = orderTotal(itemsTotal, deliveryFee, discount);
+        incoming.paidAmount = incoming.totalAmount;  // долг отменён
+        incoming.balance = 0;
       }
 
       const diffs = computeFieldDiffs(order, incoming);

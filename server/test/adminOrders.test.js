@@ -47,6 +47,15 @@ const MANAGER = { uid: 'm1', email: 'manager@matrelax.kz', role: 'manager' };
 const ADMIN = { uid: 'a1', email: 'admin@matrelax.kz', role: 'admin' };
 const EXECUTOR = { uid: 'e1', email: 'exec@matrelax.kz', role: 'executor' };
 
+// Товар каталога — сервер берёт цену отсюда (анти-тамперинг), не с клиента.
+const PRODUCT_R1 = {
+  id: 'R1',
+  surcharge10cm: 7000,
+  prices: { Стандарт: { '160x200': 40000, '180x200': 45000, '200x200': 50000 } },
+  marketPrices: { Стандарт: { '160x200': 47000, '180x200': 52000, '200x200': 57000 } },
+};
+const item = (over = {}) => ({ modelId: 'R1', fabric: 'Стандарт', size: '160x200', extra10cm: false, quantity: 1, ...over });
+
 function orderSeed(over = {}) {
   return {
     id: '2026-06-15-001',
@@ -54,10 +63,10 @@ function orderSeed(over = {}) {
     status: 'new',
     customerName: 'Иван',
     customerPhone: '+77001112233',
-    items: [{ modelId: 'R1', size: 160, extra10cm: false, quantity: 1, price: 40000 }],
+    items: [item({ price: 40000 })],
     totalAmount: 40000,
-    paidAmount: 0,
-    balance: 40000,
+    paidAmount: 40000,
+    balance: 0,
     createdAt: '2026-06-15T10:00:00.000Z',
     updatedAt: '2026-06-15T10:00:00.000Z',
     history: [{ at: '2026-06-15T10:00:00.000Z', by: 'manager@matrelax.kz', action: 'created' }],
@@ -68,17 +77,33 @@ function orderSeed(over = {}) {
 // ─── POST ────────────────────────────────────────────────────────────────────
 
 test('POST creates an order with status "new" and a created log entry', async () => {
-  const { router } = loadRouter({});
+  const { router } = loadRouter({ products: [PRODUCT_R1] });
   await withServer(router, async (port) => {
     const { status, json } = await req(port, 'POST', '/api/admin-orders', {
       user: MANAGER,
-      body: { customerName: 'Пётр', salesPoint: 'madeniyet', items: [], totalAmount: 0 },
+      body: { customerName: 'Пётр', salesPoint: 'madeniyet', items: [item({ quantity: 2, price: 1 })] },
     });
     assert.equal(status, 201);
     assert.equal(json.status, 'new');
     assert.equal(json.customerName, 'Пётр');
     assert.equal(json.itemsUnlocked, false);
+    // Цена пересчитана сервером, клиентский price:1 проигнорирован.
+    assert.equal(json.items[0].price, 40000);
+    assert.equal(json.totalAmount, 80000);
+    assert.equal(json.paidAmount, 80000);
+    assert.equal(json.balance, 0);
     assert.ok(json.history.some((h) => h.action === 'created'));
+  });
+});
+
+test('POST without items → 400', async () => {
+  const { router } = loadRouter({ products: [PRODUCT_R1] });
+  await withServer(router, async (port) => {
+    const { status } = await req(port, 'POST', '/api/admin-orders', {
+      user: MANAGER,
+      body: { customerName: 'Пётр', items: [] },
+    });
+    assert.equal(status, 400);
   });
 });
 
@@ -93,14 +118,16 @@ test('POST forbidden for executor (403)', async () => {
 // ─── PUT: item lock ──────────────────────────────────────────────────────────
 
 test('PUT editing items while status "new" succeeds', async () => {
-  const { router } = loadRouter({ adminOrders: [orderSeed()] });
+  const { router } = loadRouter({ adminOrders: [orderSeed()], products: [PRODUCT_R1] });
   await withServer(router, async (port) => {
     const { status, json } = await req(port, 'PUT', '/api/admin-orders/2026-06-15-001', {
       user: MANAGER,
-      body: { items: [{ modelId: 'R1', size: 180, extra10cm: false, quantity: 2 }] },
+      body: { items: [item({ size: '180x200', quantity: 2 })] },
     });
     assert.equal(status, 200);
-    assert.equal(json.items[0].size, 180);
+    assert.equal(json.items[0].size, '180x200');
+    assert.equal(json.items[0].price, 45000);  // пересчитано сервером
+    assert.equal(json.totalAmount, 90000);
   });
 });
 
@@ -160,14 +187,14 @@ test('PATCH /unlock with empty reason → 400', async () => {
 });
 
 test('after unlock, PUT item edit succeeds and resets itemsUnlocked to false', async () => {
-  const { router } = loadRouter({ adminOrders: [orderSeed({ status: 'progress', itemsUnlocked: true })] });
+  const { router } = loadRouter({ adminOrders: [orderSeed({ status: 'progress', itemsUnlocked: true })], products: [PRODUCT_R1] });
   await withServer(router, async (port) => {
     const { status, json } = await req(port, 'PUT', '/api/admin-orders/2026-06-15-001', {
       user: MANAGER,
-      body: { items: [{ modelId: 'R1', size: 200, extra10cm: false, quantity: 1 }] },
+      body: { items: [item({ size: '200x200', quantity: 1 })] },
     });
     assert.equal(status, 200);
-    assert.equal(json.items[0].size, 200);
+    assert.equal(json.items[0].size, '200x200');
     assert.equal(json.itemsUnlocked, false);
   });
 });
