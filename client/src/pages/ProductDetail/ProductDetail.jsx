@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../api';
 import { useCartStore } from '../../store/cartStore';
 import BottomSheet from '../../components/BottomSheet/BottomSheet';
-import { getPrice, getMarketPrice, sizeKey } from '../../utils/pricing';
+import { getPrice, getMarketPrice, sizeKey, resolveSizeKey } from '../../utils/pricing';
 import './ProductDetail.css';
 
 const SPEC_LABELS = {
@@ -77,23 +77,35 @@ export default function ProductDetail() {
     );
   }
 
-  const key = selectedSize ? sizeKey(selectedSize.width, selectedSize.height) : null;
-  const basePrice = selectedFabric && key ? getPrice(product, selectedFabric, key) : 0;
+  // Размер из полей «свой размер» (fallback — выбранный пресет).
+  const reqW = parseInt(customW, 10) || selectedSize?.width || 0;
+  const reqH = parseInt(customH, 10) || selectedSize?.height || 0;
+  // Цена считается по ближайшему стандарту (ширина округляется вверх) — как на сервере.
+  const resolvedKey = selectedFabric && reqW && reqH
+    ? resolveSizeKey(product, selectedFabric, reqW, reqH) : null;
+  const basePrice = resolvedKey ? getPrice(product, selectedFabric, resolvedKey) : 0;
   const currentPrice = basePrice + (extra10cm && basePrice ? product.surcharge10cm : 0);
 
-  const marketBase = selectedFabric && key ? getMarketPrice(product, selectedFabric, key) : 0;
+  const marketBase = resolvedKey ? getMarketPrice(product, selectedFabric, resolvedKey) : 0;
   const marketPrice = marketBase
     ? marketBase + (extra10cm ? product.surcharge10cm : 0)
     : null;
 
+  // Подсказка показывается, когда введённый размер не совпал со стандартом.
+  const resolvedW = resolvedKey ? parseInt(resolvedKey, 10) : null;
+  const priceRounded = resolvedKey && resolvedKey !== sizeKey(reqW, reqH);
+
+  const stepW = (d) => setCustomW(String(Math.max(1, (parseInt(customW, 10) || 0) + d)));
+  const stepH = (d) => setCustomH(String(Math.max(1, (parseInt(customH, 10) || 0) + d)));
+
   const handleAddToCart = () => {
-    if (!selectedSize) return;
+    if (!currentPrice) return;
     addItem({
       productId: product.id,
       name: product.name,
       series: product.series,
       image: product.imageUrl || '',
-      size: `${customW || selectedSize.width}×${customH || selectedSize.height}`,
+      size: `${reqW}×${reqH}`,   // реальный размер для цеха; цена — по стандарту
       fabric: selectedFabric,
       extra10cm,
       price: currentPrice,
@@ -155,7 +167,7 @@ export default function ProductDetail() {
                 <button
                   key={`${size.width}x${size.height}`}
                   className={`pd-size-btn ${
-                    selectedSize?.width === size.width && selectedSize?.height === size.height
+                    reqW === size.width && reqH === size.height
                       ? 'pd-size-btn--active'
                       : ''
                   }`}
@@ -170,20 +182,31 @@ export default function ProductDetail() {
           <div className="pd-section">
             <div className="pd-section-title">свой размер (см)</div>
             <div className="pd-custom-size">
-              <input
-                type="number" inputMode="numeric" min="1"
-                value={customW}
-                onChange={(e) => setCustomW(e.target.value)}
-                aria-label="ширина"
-              />
+              <div className="pd-stepper">
+                <button type="button" className="pd-step-btn" onClick={() => stepW(-10)} aria-label="ширина −10">−</button>
+                <input
+                  type="number" inputMode="numeric" min="1"
+                  value={customW}
+                  onChange={(e) => setCustomW(e.target.value)}
+                  aria-label="ширина"
+                />
+                <button type="button" className="pd-step-btn" onClick={() => stepW(10)} aria-label="ширина +10">+</button>
+              </div>
               <span className="pd-custom-x">×</span>
-              <input
-                type="number" inputMode="numeric" min="1"
-                value={customH}
-                onChange={(e) => setCustomH(e.target.value)}
-                aria-label="длина"
-              />
+              <div className="pd-stepper">
+                <button type="button" className="pd-step-btn" onClick={() => stepH(-10)} aria-label="длина −10">−</button>
+                <input
+                  type="number" inputMode="numeric" min="1"
+                  value={customH}
+                  onChange={(e) => setCustomH(e.target.value)}
+                  aria-label="длина"
+                />
+                <button type="button" className="pd-step-btn" onClick={() => stepH(10)} aria-label="длина +10">+</button>
+              </div>
             </div>
+            {priceRounded && (
+              <p className="pd-size-hint">Цена рассчитана по ближайшему стандартному размеру: {resolvedW} см</p>
+            )}
           </div>
 
           {product.fabricOptions?.length > 0 && (
@@ -223,12 +246,12 @@ export default function ProductDetail() {
 
       <div className="pd-bottom">
         <div className="pd-bottom-size">
-          {selectedSize ? `${customW || selectedSize.width}×${customH || selectedSize.height} см` : ''}
+          {reqW && reqH ? `${reqW}×${reqH} см` : ''}
         </div>
         <button
           className={`price-btn ${added ? 'price-btn--added' : ''}`}
           onClick={handleAddToCart}
-          disabled={!selectedSize}
+          disabled={!currentPrice}
         >
           {added ? '✓ добавлено' : `добавить в корзину · ${formatPrice(currentPrice)}`}
         </button>
