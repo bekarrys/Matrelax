@@ -12,6 +12,7 @@
   "dependencies": {
     "@ark-ui/react": "^5.37.2",
     "autoprefixer": "^10.5.0",
+    "framer-motion": "^12.41.0",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.344.0",
     "postcss": "^8.5.15",
