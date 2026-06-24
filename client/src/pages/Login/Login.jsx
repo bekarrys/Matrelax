@@ -174,12 +174,12 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 cursor-pointer"
+                      className="absolute right-3 cursor-pointer bg-transparent border-0 p-0 leading-none flex items-center"
                       aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
                     >
                       {showPassword
-                        ? <Eye className="w-4 h-4 text-white/40 hover:text-white transition-colors duration-300" />
-                        : <EyeOff className="w-4 h-4 text-white/40 hover:text-white transition-colors duration-300" />}
+                        ? <Eye className="w-5 h-5 text-white/60 hover:text-white transition-colors duration-300" />
+                        : <EyeOff className="w-5 h-5 text-white/60 hover:text-white transition-colors duration-300" />}
                     </button>
                   </div>
                 </div>

@@ -3,3 +3,8 @@
 @tailwind utilities;
 
 #root { min-height: 100dvh; background: var(--bg); }
+
+/* Прячем встроенную кнопку показа пароля браузера (Edge/Chromium) —
+   у нас своя иконка-глаз; иначе рядом торчит белый квадрат. */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear { display: none; }
