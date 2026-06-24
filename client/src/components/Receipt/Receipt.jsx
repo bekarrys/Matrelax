@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { formatPrice, formatDate, SALES_POINTS, DELIVERY_TYPES } from '../../utils/constants';
 import { X, Copy, Share2 } from 'lucide-react';
 import './Receipt.css';
@@ -6,6 +6,8 @@ import './Receipt.css';
 export default function Receipt({ order, onClose }) {
   const items = order.items || [];
   const mattressesTotal = items.reduce((sum, item) => sum + ((item.price + item.surcharge) * item.quantity), 0);
+  const cardRef = useRef(null);
+  const [sharing, setSharing] = useState(false);
 
   const handleCopy = () => {
     const text = generateReceiptText(order);
@@ -14,15 +16,48 @@ export default function Receipt({ order, onClose }) {
     });
   };
 
-  const handleShare = () => {
-    const text = generateReceiptText(order);
-    const url = `https://wa.me/${order.customerPhone}?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
+  // Рендерит карточку квитанции в PNG (без кнопок) и отдаёт системному
+  // «Поделиться» (на телефоне → выбор WhatsApp, прикрепится как фото).
+  // Где Web Share с файлами недоступен (десктоп) — скачивает картинку.
+  const handleShare = async () => {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      const { default: html2canvas } = await import('html2canvas');
+      const canvas = await html2canvas(cardRef.current, {
+        backgroundColor: '#0f0f12',
+        scale: 2,
+        ignoreElements: (el) =>
+          el.classList?.contains('receipt-actions') || el.classList?.contains('receipt-close'),
+      });
+      const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
+      const file = new File([blob], `Заказ-${order.orderNumber}.png`, { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: `Заказ ${order.orderNumber}` });
+      } else {
+        // Десктоп: скачиваем картинку, чтобы прикрепить вручную.
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        // Фолбэк — текстом через wa.me.
+        const text = generateReceiptText(order);
+        window.open(`https://wa.me/${order.customerPhone}?text=${encodeURIComponent(text)}`, '_blank');
+      }
+    } finally {
+      setSharing(false);
+    }
   };
 
   return (
     <div className="receipt-overlay" onClick={onClose}>
-      <div className="receipt-card" onClick={(e) => e.stopPropagation()}>
+      <div className="receipt-card" ref={cardRef} onClick={(e) => e.stopPropagation()}>
         <div className="receipt-header">
           <div className="receipt-logo">
             <h2>🛏️ MATRELAX</h2>
@@ -110,9 +145,9 @@ export default function Receipt({ order, onClose }) {
         </div>
 
         <div className="receipt-actions">
-          <button className="btn-action" onClick={handleShare}>
+          <button className="btn-action" onClick={handleShare} disabled={sharing}>
             <Share2 size={16} />
-            WhatsApp
+            {sharing ? 'Готовлю…' : 'WhatsApp'}
           </button>
           <button className="btn-action" onClick={handleCopy}>
             <Copy size={16} />
